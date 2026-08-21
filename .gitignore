@@ -8,6 +8,7 @@ venv/
 env/
 webApp/
 .env
+*.jpg
 
 
 # Database
