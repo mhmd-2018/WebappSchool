@@ -1,5 +1,5 @@
 // ==================== API CONFIGURATION ====================
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = '/api';
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
     const headers = { 'Content-Type': 'application/json' };
@@ -76,12 +76,12 @@ function switchAuthTab(mode) {
 }
 
 async function handleSignIn() {
-    const email = document.getElementById('signinEmail').value.trim();
+    const phone = document.getElementById('signinPhone').value.trim();
     const password = document.getElementById('signinPassword').value;
     const errorEl = document.getElementById('signinError');
 
     try {
-        const data = await apiRequest('/auth/login/', 'POST', { email, password });
+        const data = await apiRequest('/auth/login/', 'POST', { phone, password });
         if (data && data.token) {
             localStorage.setItem('noqToken', data.token);
             localStorage.setItem('noqUser', JSON.stringify(data.user));
@@ -90,29 +90,29 @@ async function handleSignIn() {
             updateNavAuth();
             window.location.href = 'dashboard.html';
         } else {
-            errorEl.textContent = 'Invalid email or password.';
+            errorEl.textContent = 'Invalid phone number or password.';
             errorEl.classList.add('show');
         }
     } catch (err) {
-        errorEl.textContent = (err.data && err.data.error) || 'Invalid email or password.';
+        errorEl.textContent = (err.data && err.data.error) || 'Invalid phone number or password.';
         errorEl.classList.add('show');
     }
 }
 
 async function handleSignUp() {
     const name = document.getElementById('signupName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
     const password = document.getElementById('signupPassword').value;
     const errorEl = document.getElementById('signupError');
 
-    if (!name || !email || !password || password.length < 6) {
+    if (!name || !phone || !password || password.length < 6) {
         errorEl.textContent = 'Please fill all fields. Password must be at least 6 characters.';
         errorEl.classList.add('show');
         return;
     }
 
     try {
-        const data = await apiRequest('/auth/register/', 'POST', { name, email, password });
+        const data = await apiRequest('/auth/register/', 'POST', { name, phone, password });
         if (data && data.token) {
             localStorage.setItem('noqToken', data.token);
             localStorage.setItem('noqUser', JSON.stringify(data.user));
@@ -341,7 +341,7 @@ async function updateDashboard() {
         return;
     }
     document.getElementById('dashUserName').textContent = currentUser.name;
-    document.getElementById('dashUserEmail').textContent = currentUser.email;
+    document.getElementById('dashUserEmail').textContent = currentUser.phone;
     document.getElementById('dashAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
     document.getElementById('dashWelcomeName').textContent = currentUser.name.split(' ')[0];
 

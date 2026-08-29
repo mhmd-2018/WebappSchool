@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'Courses',
     'Profile',
     'Api',
+    'log_viewer'
 ]
 
 AUTH_USER_MODEL = 'User.User'
@@ -70,7 +71,7 @@ ROOT_URLCONF = 'root.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'frontend'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,7 +127,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'frontend']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = 'media/'
@@ -148,19 +149,22 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
+        'db': {
+            'class': 'log_viewer.handeler.DatabaseLogHandler',
+        },
     },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console','db'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console','db'],
             'level': 'INFO',
             'propagate': False,
         },
         'Courses': {
-            'handlers': ['console'],
+            'handlers': ['console','db'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },

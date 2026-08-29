@@ -18,11 +18,13 @@ FRONTEND_PAGES = [
     'dashboard.html',
     'feedback.html',
     'signup.html',
+    'profile_alter.html',
 ]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('Api.urls')),
+    path('', include('log_viewer.urls')),
     path('', TemplateView.as_view(template_name='base.html'), name='home'),
 ]
 urlpatterns += [

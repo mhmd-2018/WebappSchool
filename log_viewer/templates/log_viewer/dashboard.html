@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="dashboard-card">
+    <div class="header">
+        <h1>🔐 System Logs (Superadmin Only)</h1>
+    </div>
+
+    <form class="filter-bar" method="get">
+        <div class="filter-group">
+            <label for="searchInput">Search Logs</label>
+            <input type="text" id="searchInput" name="q" value="{{ search|default:'' }}" placeholder="Search message or logger...">
+        </div>
+
+        <div class="filter-group">
+            <label for="levelSelect">Log Level</label>
+            <select id="levelSelect" name="level">
+                <option value="" {% if not level %}selected{% endif %}>All Levels</option>
+                {% for choice in level_choices %}
+                    <option value="{{ choice }}" {% if level == choice %}selected{% endif %}>{{ choice }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group" style="flex-direction: row;">
+            <button type="submit">Apply Filter</button>
+            <a class="clear" href="{% url 'log_dashboard' %}"><button type="button">Clear</button></a>
+        </div>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Level</th>
+                <th>Logger</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody id="logTableBody">
+            {% for log in page_obj %}
+            <tr>
+                <td>{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td><span class="badge {{ log.level }}">{{ log.level }}</span></td>
+                <td>{{ log.logger_name }}</td>
+                <td>{{ log.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="empty-state" id="emptyState" {% if page_obj.paginator.count %}style="display:none;"{% endif %}>
+        No logs found matching your filters.
+    </div>
+
+    <div class="pagination">
+        <span>
+            {% if page_obj.paginator.count %}
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+            {% else %}
+                Showing 0 of 0 entries
+            {% endif %}
+        </span>
+        <div class="pagination-buttons">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if level %}&level={{ level }}{% endif %}{% if search %}&q={{ search }}{% endif %}"><button type="button">Previous</button></a>
+            {% else %}
+                <button disabled>Previous</button>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if level %}&level={{ level }}{% endif %}{% if search %}&q={{ search }}{% endif %}"><button type="button">Next</button></a>
+            {% else %}
+                <button disabled>Next</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</body>
+</html>
