@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Course, Enrollment, Package, Review
+from .models import Category, Contact, Course, CourseEnrollment, Enrollment, Package, Review
 
 
 @admin.register(Category)
@@ -11,7 +11,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'level', 'origin', 'price', 'is_free', 'is_published', 'average_rating']
+    list_display = ['title', 'category', 'level', 'price', 'is_published', 'average_rating']
     list_filter = ['category', 'level', 'origin', 'is_free', 'is_published']
     search_fields = ['title', 'instructor_name', 'provider_name']
     prepopulated_fields = {'slug': ('title',)}
@@ -19,8 +19,20 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ['course', 'user', 'score', 'created_at']
-    list_filter = ['score']
+    list_display = ['course', 'user', 'score', 'recommend', 'created_at']
+    list_filter = ['score', 'recommend']
+
+
+@admin.register(CourseEnrollment)
+class CourseEnrollmentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'course', 'progress', 'enrolled_at']
+    list_filter = ['progress']
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'subject', 'created_at']
+    list_filter = ['subject']
 
 
 @admin.register(Package)

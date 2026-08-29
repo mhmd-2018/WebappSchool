@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up / Sign In - No. Q</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <a class="logo" href="base.html">
+            <div class="logo-icon">Q</div>
+            <span class="logo-text">No. <span>Q</span></span>
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="base.html">Home</a></li>
+            <li><a href="course_list.html">Services</a></li>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="contact_us.html">Contact</a></li>
+            <li><a href="feedback.html">Feedback</a></li>
+        </ul>
+        <div class="nav-auth" id="navAuth"></div>
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <main class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">Q</div>
+                <h2 id="authTitle">Welcome Back</h2>
+                <p id="authSubtitle">Sign in to continue your learning journey</p>
+            </div>
+            <div class="auth-tabs">
+                <button id="tabSignIn" class="active" onclick="switchAuthTab('signin')">Sign In</button>
+                <button id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            <div id="signinForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-with-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                        <input type="email" id="signinEmail" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-with-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        <input type="password" id="signinPassword" placeholder="Enter your password" autocomplete="current-password">
+                    </div>
+                    <div class="error-msg" id="signinError">Invalid email or password.</div>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="handleSignIn()">Sign In</button>
+                <div class="auth-footer">Don't have an account? <a onclick="switchAuthTab('signup')">Sign Up</a></div>
+            </div>
+            <div id="signupForm" style="display:none;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-with-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="signupName" placeholder="John Doe" autocomplete="name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-with-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                        <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-with-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        <input type="password" id="signupPassword" placeholder="Minimum 6 characters" autocomplete="new-password">
+                    </div>
+                    <div class="error-msg" id="signupError">Please fill all fields correctly. Password must be 6+ chars.</div>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="handleSignUp()">Create Account</button>
+                <div class="auth-footer">Already have an account? <a onclick="switchAuthTab('signin')">Sign In</a></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="base.html">Home</a>
+            <a href="course_list.html">Services</a>
+            <a href="contact_us.html">Contact</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="signup.html">Sign In</a>
+        </div>
+        <p>&copy; 2026 No. Q. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

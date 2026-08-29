@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse courses — Studia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>Studia</a>
+    <nav class="nav-links" id="navLinks">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link is-active" href="courses.html">Courses</a>
+      <a class="nav-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link" href="contact.html">Contact</a>
+      <a class="nav-link" href="feedback.html">Course feedback</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="signin.html" class="btn btn-ghost">Sign in</a>
+      <a href="signup.html" class="btn btn-primary">Get started</a>
+      <button class="nav-burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+    <div class="courses-header">
+      <h1>All courses</h1>
+      <p>Every course lives on its own row: name and rating up top, a plain-language summary underneath, so you can compare without opening ten tabs.</p>
+
+      <div class="courses-toolbar">
+        <div class="toolbar-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Search by course, topic or instructor">
+        </div>
+        <div class="toolbar-sort">
+          Sort by
+          <select id="sortSelect">
+            <option value="relevance">Relevance</option>
+            <option value="rating">Highest rated</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="duration">Shortest first</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chip-row" id="categoryChips" style="margin-top:20px;"></div>
+    </div>
+
+    <div class="courses-body">
+      <aside class="filter-panel card" aria-label="Filters">
+        <div>
+          <h4>Level</h4>
+          <div class="filter-list" id="levelFilters"></div>
+        </div>
+        <div>
+          <h4>Duration</h4>
+          <div class="filter-list" id="durationFilters">
+            <label><input type="radio" name="duration" value="all" checked> Any length</label>
+            <label><input type="radio" name="duration" value="short"> Under 5 hours</label>
+            <label><input type="radio" name="duration" value="medium"> 5–9 hours</label>
+            <label><input type="radio" name="duration" value="long"> 9+ hours</label>
+          </div>
+        </div>
+        <button class="filter-reset" id="resetFilters">Reset all filters</button>
+      </aside>
+
+      <div class="course-list">
+        <div class="result-count" id="resultCount"></div>
+        <div id="courseListItems"></div>
+        <div id="emptyState" class="empty-state card" style="display:none;">
+          <h3>No courses match yet</h3>
+          <p>Try a different search term or clear a filter.</p>
+        </div>
+        <div class="load-more-wrap">
+          <button class="btn btn-outline" id="loadMoreBtn">Load more courses</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 Studia. All rights reserved.</span>
+      <span><a href="contact.html">Contact us</a> · <a href="feedback.html">Give feedback</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const state = {
+    q: params.get("q") || "",
+    cat: params.get("cat") || "All",
+    level: "All",
+    duration: "all",
+    sort: "relevance",
+    visible: 6
+  };
+
+  const searchInput = document.getElementById("searchInput");
+  const sortSelect = document.getElementById("sortSelect");
+  const categoryChips = document.getElementById("categoryChips");
+  const levelFilters = document.getElementById("levelFilters");
+  const listEl = document.getElementById("courseListItems");
+  const emptyState = document.getElementById("emptyState");
+  const resultCount = document.getElementById("resultCount");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
+
+  searchInput.value = state.q;
+
+  // build category chips
+  const categories = ["All", ...Object.keys(CATEGORY_COLORS)];
+  categoryChips.innerHTML = categories.map(cat => {
+    const count = cat === "All" ? COURSES.length : COURSES.filter(c => c.category === cat).length;
+    return `<button class="chip ${cat === state.cat ? "is-active" : ""}" data-cat="${cat}">${cat} <span class="chip-count">${count}</span></button>`;
+  }).join("");
+
+  // build level filters
+  const levels = ["All", "Beginner", "Intermediate", "Advanced"];
+  levelFilters.innerHTML = levels.map(lv => `
+    <label><input type="radio" name="level" value="${lv}" ${lv === "All" ? "checked" : ""}> ${lv}</label>
+  `).join("");
+
+  function matchesDuration(course, key){
+    const hours = parseInt(course.duration);
+    if (key === "short") return hours < 5;
+    if (key === "medium") return hours >= 5 && hours < 9;
+    if (key === "long") return hours >= 9;
+    return true;
+  }
+
+  function getFiltered(){
+    let list = COURSES.filter(c => {
+      const q = state.q.trim().toLowerCase();
+      const matchesQ = !q || c.name.toLowerCase().includes(q) || c.instructor.toLowerCase().includes(q) || c.category.toLowerCase().includes(q);
+      const matchesCat = state.cat === "All" || c.category === state.cat;
+      const matchesLevel = state.level === "All" || c.level === state.level;
+      return matchesQ && matchesCat && matchesLevel && matchesDuration(c, state.duration);
+    });
+    if (state.sort === "rating") list.sort((a,b) => b.rating - a.rating);
+    if (state.sort === "price-asc") list.sort((a,b) => a.price - b.price);
+    if (state.sort === "price-desc") list.sort((a,b) => b.price - a.price);
+    if (state.sort === "duration") list.sort((a,b) => parseInt(a.duration) - parseInt(b.duration));
+    return list;
+  }
+
+  function render(){
+    const filtered = getFiltered();
+    resultCount.textContent = `${filtered.length} course${filtered.length === 1 ? "" : "s"} found`;
+    const shown = filtered.slice(0, state.visible);
+
+    listEl.innerHTML = shown.map(c => `
+      <article class="card course-row">
+        ${courseThumb(c)}
+        <div class="content">
+          <div class="row-top">
+            <h3>${c.name}</h3>
+            ${ratingChip(c.rating, c.ratingCount)}
+          </div>
+          <div class="meta-line">
+            <span>${c.instructor}</span>
+            <span>${c.level}</span>
+            <span>${c.duration}</span>
+            <span class="tag">${c.category}</span>
+          </div>
+          <p class="summary">${c.summary}</p>
+          <div class="row-bottom">
+            <span class="price">$${c.price}</span>
+            <a href="feedback.html?course=${c.id}" class="btn btn-sm btn-outline">Leave feedback</a>
+          </div>
+        </div>
+        <div class="side">
+          <a href="#" class="btn btn-sm btn-primary">View course</a>
+        </div>
+      </article>
+    `).join("");
+
+    emptyState.style.display = filtered.length === 0 ? "block" : "none";
+    loadMoreBtn.style.display = filtered.length > state.visible ? "inline-flex" : "none";
+  }
+
+  categoryChips.addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip");
+    if (!btn) return;
+    state.cat = btn.dataset.cat;
+    state.visible = 6;
+    categoryChips.querySelectorAll(".chip").forEach(c => c.classList.toggle("is-active", c === btn));
+    render();
+  });
+
+  levelFilters.addEventListener("change", (e) => {
+    state.level = e.target.value;
+    state.visible = 6;
+    render();
+  });
+
+  document.getElementById("durationFilters").addEventListener("change", (e) => {
+    state.duration = e.target.value;
+    state.visible = 6;
+    render();
+  });
+
+  searchInput.addEventListener("input", (e) => {
+    state.q = e.target.value;
+    state.visible = 6;
+    render();
+  });
+
+  sortSelect.addEventListener("change", (e) => {
+    state.sort = e.target.value;
+    render();
+  });
+
+  loadMoreBtn.addEventListener("click", () => {
+    state.visible += 6;
+    render();
+  });
+
+  document.getElementById("resetFilters").addEventListener("click", () => {
+    state.cat = "All"; state.level = "All"; state.duration = "all"; state.q = ""; state.visible = 6;
+    searchInput.value = "";
+    document.querySelector('input[name="level"][value="All"]').checked = true;
+    document.querySelector('input[name="duration"][value="all"]').checked = true;
+    categoryChips.querySelectorAll(".chip").forEach(c => c.classList.toggle("is-active", c.dataset.cat === "All"));
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

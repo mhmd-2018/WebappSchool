@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course feedback — Studia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>Studia</a>
+    <nav class="nav-links" id="navLinks">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="courses.html">Courses</a>
+      <a class="nav-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link" href="contact.html">Contact</a>
+      <a class="nav-link is-active" href="feedback.html">Course feedback</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="signin.html" class="btn btn-ghost">Sign in</a>
+      <a href="signup.html" class="btn btn-primary">Get started</a>
+      <button class="nav-burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+    <div class="page-head">
+      <span class="eyebrow"><span class="dot"></span>Help other learners choose</span>
+      <h1>Rate a course</h1>
+      <p>Tell us what worked, what didn't, and who it's really for. Your review helps thousands of learners pick the right course.</p>
+    </div>
+
+    <div class="section">
+      <div class="feedback-shell">
+        <!-- form -->
+        <div class="card feedback-form-card">
+          <h3 style="font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:20px;">Write your review</h3>
+          <form id="feedbackForm" novalidate>
+            <div class="field" id="courseField">
+              <label for="courseSelect">Which course?</label>
+              <select class="select" id="courseSelect" required>
+                <option value="">Choose a course…</option>
+              </select>
+              <div class="course-select-preview" id="coursePreview"></div>
+            </div>
+
+            <div class="field">
+              <label>Your rating</label>
+              <div style="display:flex;align-items:center;">
+                <div class="star-picker" id="starPicker"></div>
+                <span class="star-picker-label" id="starLabel">Tap a star to rate</span>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label for="rname">Your name <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+                <input class="input" type="text" id="rname" placeholder="Jordan Rivers">
+              </div>
+              <div class="field">
+                <label for="remail">Email <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+                <input class="input" type="email" id="remail" placeholder="you@example.com">
+              </div>
+            </div>
+
+            <div class="field" id="commentField">
+              <label for="rcomment">Your feedback</label>
+              <textarea class="textarea" id="rcomment" placeholder="What did you like? What could be better? Who would you recommend this to?" required></textarea>
+              <span class="field-error">Please share a few words of feedback.</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Submit review</button>
+            <div id="feedbackToast"></div>
+          </form>
+        </div>
+
+        <!-- recent reviews -->
+        <div class="reviews-col">
+          <div class="reviews-col-head">
+            <h3>Recent reviews</h3>
+            <span style="font-size:13px;color:var(--muted);font-family:var(--font-mono);">Updated live</span>
+          </div>
+          <div id="reviewsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 Studia. All rights reserved.</span>
+      <span><a href="contact.html">Contact us</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+  // populate course select
+  const courseSelect = document.getElementById("courseSelect");
+  courseSelect.innerHTML += COURSES.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+
+  const params = new URLSearchParams(window.location.search);
+  const preselect = params.get("course");
+  if (preselect) courseSelect.value = preselect;
+
+  const coursePreview = document.getElementById("coursePreview");
+  function updatePreview(){
+    const course = COURSES.find(c => c.id === courseSelect.value);
+    if (!course){ coursePreview.classList.remove("is-visible"); coursePreview.innerHTML=""; return; }
+    coursePreview.classList.add("is-visible");
+    coursePreview.innerHTML = `
+      ${courseThumb(course, 44)}
+      <div><b>${course.name}</b><span>${course.instructor} · ${course.category}</span></div>
+    `;
+  }
+  courseSelect.addEventListener("change", updatePreview);
+  updatePreview();
+
+  // build star picker (5 stars)
+  const starPicker = document.getElementById("starPicker");
+  const starLabels = { 1: "Poor", 2: "Fair", 3: "Good", 4: "Very good", 5: "Excellent" };
+  starPicker.innerHTML = [1,2,3,4,5].map(v => `<button type="button" data-val="${v}" aria-label="${v} star${v>1?'s':''}">${starSVG()}</button>`).join("");
+  const starLabel = document.getElementById("starLabel");
+  let currentRating = 0;
+
+  function paintStars(val){
+    starPicker.querySelectorAll("button").forEach(btn => {
+      btn.classList.toggle("is-filled", Number(btn.dataset.val) <= val);
+    });
+  }
+  starPicker.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    currentRating = Number(btn.dataset.val);
+    paintStars(currentRating);
+    starLabel.textContent = `${currentRating} · ${starLabels[currentRating]}`;
+  });
+  starPicker.addEventListener("mouseover", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    paintStars(Number(btn.dataset.val));
+  });
+  starPicker.addEventListener("mouseleave", () => paintStars(currentRating));
+
+  // recent reviews (sample data)
+  const reviews = [
+    { name: "Priya S.", initials: "PS", color: "#3B2F8C", course: "React from First Principles", rating: 5, text: "Building the same app three times finally made state management click for me.", time: "2 days ago" },
+    { name: "Marcus O.", initials: "MO", color: "#1F7A6C", course: "SQL for Everyday Analysis", rating: 4, text: "Great pace, wish there were a couple more exercises on window functions.", time: "4 days ago" },
+    { name: "Ines D.", initials: "ID", color: "#E4572E", course: "Copywriting That Converts", rating: 5, text: "Rewrote our landing page the same night. Immediately useful.", time: "1 week ago" },
+    { name: "Tobias K.", initials: "TK", color: "#B8862B", course: "Portrait Lighting in Natural Light", rating: 5, text: "Simple gear list, huge difference in my photos within a weekend.", time: "1 week ago" },
+  ];
+  document.getElementById("reviewsList").innerHTML = reviews.map(r => `
+    <div class="card review-card">
+      <div class="review-top">
+        <div class="review-person">
+          <div class="avatar" style="background:${r.color};width:32px;height:32px;font-size:11px;">${r.initials}</div>
+          <div><b>${r.name}</b><span>${r.time}</span></div>
+        </div>
+        <div class="review-stars">${Array(r.rating).fill(starSVG()).join("")}</div>
+      </div>
+      <p>${r.text}</p>
+      <span class="review-tag">${r.course}</span>
+    </div>
+  `).join("");
+
+  // submit handling
+  document.getElementById("feedbackForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    let valid = true;
+
+    if (!courseSelect.value) { document.getElementById("courseField").classList.add("has-error"); valid = false; }
+    else document.getElementById("courseField").classList.remove("has-error");
+
+    const comment = document.getElementById("rcomment");
+    const commentField = document.getElementById("commentField");
+    if (comment.value.trim().length < 5) { commentField.classList.add("has-error"); valid = false; }
+    else commentField.classList.remove("has-error");
+
+    if (currentRating === 0) valid = false;
+
+    if (!valid) return;
+
+    const course = COURSES.find(c => c.id === courseSelect.value);
+    document.getElementById("feedbackToast").innerHTML = `
+      <div class="toast"><strong>Thanks for the review!</strong> Your ${currentRating}-star rating for "${course.name}" was recorded. (Demo only — nothing was actually saved.)</div>
+    `;
+    e.target.reset();
+    currentRating = 0;
+    paintStars(0);
+    starLabel.textContent = "Tap a star to rate";
+    updatePreview();
+  });
+</script>
+</body>
+</html>

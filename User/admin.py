@@ -7,18 +7,18 @@ from .models import User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ['-date_joined']
-    list_display = ['phone_number', 'full_name', 'email', 'is_staff', 'is_active', 'date_joined']
-    search_fields = ['phone_number', 'full_name', 'email']
+    list_display = ['email', 'full_name', 'phone_number', 'is_staff', 'is_active', 'date_joined']
+    search_fields = ['email', 'full_name', 'phone_number']
     fieldsets = (
-        (None, {'fields': ('phone_number', 'password')}),
-        ('اطلاعات شخصی', {'fields': ('full_name', 'email')}),
+        (None, {'fields': ('email', 'password')}),
+        ('اطلاعات شخصی', {'fields': ('full_name', 'phone_number')}),
         ('دسترسی‌ها', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('تاریخ‌ها', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'full_name', 'email', 'password1', 'password2'),
+            'fields': ('email', 'full_name', 'phone_number', 'password1', 'password2'),
         }),
     )
     readonly_fields = ['date_joined']

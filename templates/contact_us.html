@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - No. Q</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <a class="logo" href="base.html">
+            <div class="logo-icon">Q</div>
+            <span class="logo-text">No. <span>Q</span></span>
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="base.html">Home</a></li>
+            <li><a href="course_list.html">Services</a></li>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="contact_us.html" class="active">Contact</a></li>
+            <li><a href="feedback.html">Feedback</a></li>
+        </ul>
+        <div class="nav-auth" id="navAuth"></div>
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <main class="feedback-page">
+        <div class="feedback-card" id="contactFormCard">
+            <h1>Contact Us</h1>
+            <p class="feedback-subtitle">Have a question, suggestion, or just want to say hi? Drop us a message below and we'll get back to you within 24 hours.</p>
+            <form onsubmit="handleContactSubmit(event)">
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" id="contactName" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="contactEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <select id="contactSubject" required>
+                        <option value="">Select a subject...</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="billing">Billing Question</option>
+                        <option value="suggestion">Course Suggestion</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Message / Comment *</label>
+                    <textarea id="contactMessage" placeholder="Type your message here..." required minlength="10"></textarea>
+                    <div class="char-count"><span id="contactCharCount">0</span> / 1000 characters</div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">Send Message</button>
+            </form>
+        </div>
+        <div class="feedback-card feedback-success" id="contactSuccess" style="display:none;">
+            <div class="success-icon">Sent</div>
+            <h2>Message Sent Successfully!</h2>
+            <p>Thank you for reaching out. Our team will respond to you within 24 hours.</p>
+            <button class="btn btn-outline" style="margin-top:20px;" onclick="resetContactForm()">Send Another Message</button>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="base.html">Home</a>
+            <a href="course_list.html">Services</a>
+            <a href="contact_us.html">Contact</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="signup.html">Sign In</a>
+        </div>
+        <p>&copy; 2026 No. Q. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

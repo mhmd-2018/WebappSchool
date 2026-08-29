@@ -35,16 +35,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'User',
     'Courses',
     'Profile',
+    'Api',
 ]
 
 AUTH_USER_MODEL = 'User.User'
 
-LOGIN_URL = 'user:login'
-LOGIN_REDIRECT_URL = 'courses:course_list'
-LOGOUT_REDIRECT_URL = 'courses:course_list'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
