@@ -1,18 +1,6 @@
-from base import *
-import os
-from pathlib import Path
-from dotenv import load_dotenv
+from .base import *
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-# Load the .env file located at the root of your project
-load_dotenv(BASE_DIR / '.env')
-
-DEBUG = os.getenv('DEBUG')
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').strip(',')
+DEBUG = False
 
 DATABASES = {
     'default': {
@@ -21,6 +9,12 @@ DATABASES = {
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
-        'PORT':os.getenv('DB_PORT'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
