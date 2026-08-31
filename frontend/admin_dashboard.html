@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>داشبورد مدیریت | Studia</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- ===== Navigation (Top Bar) ===== -->
+    <nav class="navbar" id="navbar">
+        <div class="logo" onclick="window.location.href='base.html'">
+            <div class="logo-icon">S</div>
+            <div class="logo-text">Studia</div>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="base.html">خانه</a></li>
+            <li><a href="course_list.html">دوره‌ها</a></li>
+            <li><a href="User_dashboard.html">داشبورد</a></li>
+            <li><a href="admin_dashboard.html" class="active">مدیریت</a></li>
+            <li><a href="feedback.html">نظرات</a></li>
+            <li><a href="profile_alter.html">پروفایل</a></li>
+        </ul>
+        <div class="nav-auth" id="navAuth">
+            <!-- populated by scripts.js -->
+        </div>
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ===== Admin Wrapper ===== -->
+    <div class="admin-wrapper">
+
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleAdminSidebar()"></div>
+
+        <!-- ===== Sidebar ===== -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-brand">
+                <span>📊</span> پنل <span>مدیریت</span>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">منو</div>
+                <button class="nav-item active" data-section="overview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    نمای کلی
+                </button>
+                <a class="nav-item" id="sidebarLogLink" href="log_dashboard.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    لاگ‌های سیستم
+                    <span class="badge" id="sidebarLogBadge">0</span>
+                </a>
+                <button class="nav-item" data-section="finance">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    مالی
+                </button>
+                <button class="nav-item" data-section="users">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    گزارش کاربران
+                </button>
+                <button class="nav-item" data-section="messages">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    پیام‌ها
+                    <span class="badge" id="sidebarMessageBadge">0</span>
+                </button>
+                <button class="nav-item" data-section="feedback">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    بازخوردها
+                    <span class="badge" id="sidebarFeedbackBadge">0</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- ===== Main Content ===== -->
+        <main class="admin-main">
+
+            <!-- Top Bar -->
+            <div class="admin-topbar">
+                <div class="page-title">
+                    <h1 id="mainPageTitle">📊 نمای کلی</h1>
+                    <p id="mainPageSub">خلاصه وضعیت سیستم و کاربران</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+                    <a class="btn btn-outline btn-sm" id="topbarLogLink" href="log_dashboard.html">📋 لاگ‌ها</a>
+                    <div class="user-avatar" id="adminAvatar" onclick="window.location.href='profile_alter.html'">؟</div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- SECTION: OVERVIEW (DEFAULT) -->
+            <!-- ========================================= -->
+            <div class="dash-section active" id="section-overview">
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="statActiveUsers">0</div>
+                        <div class="stat-label">کاربران فعال</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-value" id="statRevenue">$0</div>
+                        <div class="stat-label">درآمد کل</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✉️</div>
+                        <div class="stat-value" id="statMessages">0</div>
+                        <div class="stat-label">پیام‌های جدید</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-value" id="statFeedback">0</div>
+                        <div class="stat-label">بازخوردها</div>
+                    </div>
+                </div>
+
+                <!-- Log Summary -->
+                <div class="log-summary">
+                    <div class="log-box info">
+                        <div class="log-info">
+                            <div class="log-count" id="logCountInfo">0</div>
+                            <div class="log-label">اطلاعات (INFO)</div>
+                        </div>
+                        <div class="log-icon">ℹ️</div>
+                    </div>
+                    <div class="log-box warning">
+                        <div class="log-info">
+                            <div class="log-count" id="logCountWarning">0</div>
+                            <div class="log-label">اخطار (WARNING)</div>
+                        </div>
+                        <div class="log-icon">⚠️</div>
+                    </div>
+                    <div class="log-box error">
+                        <div class="log-info">
+                            <div class="log-count" id="logCountError">0</div>
+                            <div class="log-label">خطا (ERROR)</div>
+                        </div>
+                        <div class="log-icon">🚨</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>📈 روند مالی (تراکنش‌های اخیر)</h3>
+                        </div>
+                        <canvas id="financeChart" height="220"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>⭐ توزیع امتیازات کاربران</h3>
+                        </div>
+                        <canvas id="ratingChart" height="220"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity (Quick preview of other sections) -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                    <div class="section-detail-card">
+                        <div class="card-header">
+                            <h3>📝 آخرین پیام‌ها</h3>
+                            <span style="color:var(--primary-light);cursor:pointer;" onclick="navigateToAdminSection('messages')">مشاهده همه →</span>
+                        </div>
+                        <div class="message-list" style="max-height:200px;" id="overviewMessageList"></div>
+                    </div>
+                    <div class="section-detail-card">
+                        <div class="card-header">
+                            <h3>⭐ آخرین بازخوردها</h3>
+                            <span style="color:var(--primary-light);cursor:pointer;" onclick="navigateToAdminSection('feedback')">مشاهده همه →</span>
+                        </div>
+                        <div class="feedback-list" style="max-height:200px;" id="overviewFeedbackList"></div>
+                    </div>
+                </div>
+
+            </div><!-- end overview -->
+
+            <!-- ========================================= -->
+            <!-- SECTION: FINANCE (Detail) -->
+            <!-- ========================================= -->
+            <div class="dash-section" id="section-finance">
+                <div class="section-detail-card">
+                    <div class="card-header">
+                        <h3>💰 گزارش مالی تفصیلی</h3>
+                        <span style="color:var(--text-light); font-size:0.85rem;" id="financeDate"></span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px;">
+                        <div style="background:var(--bg); padding:14px; border-radius:var(--radius); text-align:center;">
+                            <div style="font-size:1.4rem; font-weight:800; color:var(--success);" id="financeIncome">$0</div>
+                            <div style="font-size:0.8rem; color:var(--text-light);">کل درآمد</div>
+                        </div>
+                        <div style="background:var(--bg); padding:14px; border-radius:var(--radius); text-align:center;">
+                            <div style="font-size:1.4rem; font-weight:800; color:var(--danger);" id="financeExpenses">$0</div>
+                            <div style="font-size:0.8rem; color:var(--text-light);">هزینه‌ها</div>
+                        </div>
+                        <div style="background:var(--bg); padding:14px; border-radius:var(--radius); text-align:center;">
+                            <div style="font-size:1.4rem; font-weight:800; color:var(--text);" id="financeNet">$0</div>
+                            <div style="font-size:0.8rem; color:var(--text-light);">سود خالص</div>
+                        </div>
+                    </div>
+                    <div class="transaction-list" id="transactionList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- SECTION: USERS (Detail) -->
+            <!-- ========================================= -->
+            <div class="dash-section" id="section-users">
+                <div class="section-detail-card">
+                    <div class="card-header">
+                        <h3>👥 گزارش کاربران</h3>
+                        <span style="color:var(--text-light); font-size:0.85rem;">بر اساس فعالیت</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:12px;" id="userReportBars"></div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- SECTION: MESSAGES (Detail) -->
+            <!-- ========================================= -->
+            <div class="dash-section" id="section-messages">
+                <div class="section-detail-card">
+                    <div class="card-header">
+                        <h3>✉️ پیام‌های دریافتی <span class="badge-count" id="messagesBadgeCount">0 نخوانده</span></h3>
+                        <span style="color:var(--text-light); font-size:0.85rem;">آخرین پیام‌ها</span>
+                    </div>
+                    <div class="message-list" id="messageList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- SECTION: FEEDBACK (Detail) -->
+            <!-- ========================================= -->
+            <div class="dash-section" id="section-feedback">
+                <div class="section-detail-card">
+                    <div class="card-header">
+                        <h3>⭐ بازخورد کاربران <span class="badge-count" id="feedbackBadgeCount">0</span></h3>
+                        <span style="color:var(--text-light); font-size:0.85rem;">آخرین نظرات</span>
+                    </div>
+                    <div class="feedback-list" id="feedbackListFull"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ===== Footer ===== -->
+    <footer class="site-footer" style="border-top: none; padding-top:10px; margin-right:260px;">
+        <div class="footer-links">
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">دوره‌ها</a>
+            <a href="User_dashboard.html">داشبورد</a>
+            <a href="admin_dashboard.html">مدیریت</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="profile_alter.html">پروفایل</a>
+        </div>
+        <p>© ۲۰۲۶ Studia – تمامی حقوق محفوظ است.</p>
+    </footer>
+
+    <!-- ===== Scripts ===== -->
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

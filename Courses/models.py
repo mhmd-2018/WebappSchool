@@ -152,6 +152,7 @@ class Contact(models.Model):
     email = models.EmailField(verbose_name='ایمیل')
     subject = models.CharField(max_length=20, choices=SUBJECT_CHOICES, verbose_name='موضوع')
     message = models.TextField(verbose_name='پیام')
+    is_read = models.BooleanField(default=False, verbose_name='خوانده شده')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -161,6 +162,26 @@ class Contact(models.Model):
 
     def __str__(self):
         return f'{self.name} <{self.email}> - {self.get_subject_display()}'
+
+
+class Transaction(models.Model):
+    class Type(models.TextChoices):
+        INCOME = 'income', 'درآمد'
+        EXPENSE = 'expense', 'هزینه'
+
+    type = models.CharField(max_length=10, choices=Type.choices, verbose_name='نوع')
+    label = models.CharField(max_length=200, verbose_name='شرح')
+    amount = models.PositiveIntegerField(verbose_name='مبلغ (دلار)')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'تراکنش مالی'
+        verbose_name_plural = 'تراکنش‌های مالی'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        sign = '+' if self.type == self.Type.INCOME else '-'
+        return f'{self.label} ({sign}{self.amount}$)'
 
 
 class Package(models.Model):

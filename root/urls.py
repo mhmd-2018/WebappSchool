@@ -15,10 +15,12 @@ FRONTEND_PAGES = [
     'contact_us.html',
     'course.html',
     'course_list.html',
-    'dashboard.html',
+    'User_dashboard.html',
     'feedback.html',
     'signup.html',
     'profile_alter.html',
+    'admin_dashboard.html',
+    'log_dashboard.html',
 ]
 
 urlpatterns = [

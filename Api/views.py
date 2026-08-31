@@ -1,20 +1,40 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Count, Q, Sum
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, BasePermission, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from Courses.models import Contact, Course, CourseEnrollment, Review
+from Courses.models import Contact, Course, CourseEnrollment, Review, Transaction
+from log_viewer.models import LogEntry
 from User.models import phone_validator
 
 from .serializers import CourseSerializer, ProfileSerializer
 
 User = get_user_model()
 
+LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+
+
+class IsSuperUser(BasePermission):
+    """Matches log_viewer's own superuser-only gate on the legacy /logs/ view —
+    system log messages can contain stack traces/internals, so this stays a
+    stricter bar than the general is_staff admin panel."""
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
+
 
 def _user_payload(user):
-    return {'id': user.id, 'name': user.full_name or user.phone_number, 'phone': user.phone_number}
+    return {
+        'id': user.id,
+        'name': user.full_name or user.phone_number,
+        'phone': user.phone_number,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+    }
 
 
 @api_view(['POST'])
@@ -142,3 +162,132 @@ def feedback_create(request):
     else:
         Review.objects.create(course=course, user=None, score=rating, comment=message, recommend=recommend)
     return Response(status=201)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_overview(request):
+    user_counts = User.objects.aggregate(total=Count('id'), active=Count('id', filter=Q(is_active=True)))
+    total_users = user_counts['total']
+    active_users = user_counts['active']
+
+    total_income = Transaction.objects.filter(type=Transaction.Type.INCOME).aggregate(total=Sum('amount'))['total'] or 0
+    total_expenses = Transaction.objects.filter(type=Transaction.Type.EXPENSE).aggregate(total=Sum('amount'))['total'] or 0
+    new_messages = Contact.objects.filter(is_read=False).count()
+    feedback_count = Review.objects.count()
+
+    level_counts = dict(LogEntry.objects.values_list('level').annotate(count=Count('id')))
+    log_summary = {level: level_counts.get(level, 0) for level in LOG_LEVELS}
+
+    transactions = [
+        {'type': tx.type, 'label': tx.label, 'amount': tx.amount, 'time': tx.created_at.strftime('%H:%M')}
+        for tx in Transaction.objects.all()[:20]
+    ]
+
+    def pct(count):
+        return round((count / total_users) * 100) if total_users else 0
+
+    engagement = User.objects.aggregate(
+        with_profile=Count('id', filter=Q(profile__bio__gt='') | Q(profile__avatar__gt=''), distinct=True),
+        with_enrollment=Count('id', filter=Q(course_enrollments__isnull=False), distinct=True),
+        with_feedback=Count('id', filter=Q(reviews__isnull=False), distinct=True),
+    )
+
+    messages = [
+        {
+            'id': c.id,
+            'name': c.name,
+            'email': c.email,
+            'preview': c.message[:120],
+            'time': c.created_at.strftime('%Y-%m-%d %H:%M'),
+            'is_read': c.is_read,
+        }
+        for c in Contact.objects.all()[:20]
+    ]
+
+    feedback = [
+        {
+            # Matches ReviewSerializer.get_name's fallback so the same review
+            # shows the same display name here and on the public course page.
+            'name': (r.user.full_name or r.user.email) if r.user else 'Anonymous',
+            'text': r.comment,
+            'rating': r.score,
+            'time': r.created_at.strftime('%Y-%m-%d %H:%M'),
+        }
+        for r in Review.objects.select_related('user').all()[:20]
+    ]
+
+    score_counts = dict(Review.objects.values_list('score').annotate(count=Count('id')))
+    rating_distribution = {str(score): score_counts.get(score, 0) for score in range(1, 6)}
+
+    return Response({
+        'stats': {
+            'active_users': active_users,
+            'total_revenue': total_income,
+            'new_messages': new_messages,
+            'feedback_count': feedback_count,
+        },
+        'log_summary': log_summary,
+        'finance': {
+            'total_income': total_income,
+            'total_expenses': total_expenses,
+            'net': total_income - total_expenses,
+            'transactions': transactions,
+        },
+        'users_report': {
+            'active_percent': pct(active_users),
+            'profile_completion_percent': pct(engagement['with_profile']),
+            'enrollment_percent': pct(engagement['with_enrollment']),
+            'feedback_percent': pct(engagement['with_feedback']),
+        },
+        'messages': messages,
+        'feedback': feedback,
+        'rating_distribution': rating_distribution,
+    })
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def admin_mark_message_read(request, pk):
+    contact = Contact.objects.filter(pk=pk).first()
+    if not contact:
+        return Response({'error': 'Message not found.'}, status=404)
+    contact.is_read = True
+    contact.save(update_fields=['is_read'])
+    return Response({'id': contact.id, 'is_read': True})
+
+
+@api_view(['GET'])
+@permission_classes([IsSuperUser])
+def admin_logs(request):
+    qs = LogEntry.objects.all()
+
+    level = request.GET.get('level')
+    if level:
+        qs = qs.filter(level=level)
+
+    search = request.GET.get('q')
+    if search:
+        qs = qs.filter(Q(message__icontains=search) | Q(logger_name__icontains=search))
+
+    paginator = Paginator(qs, 50)
+    page = paginator.get_page(request.GET.get('page'))
+
+    return Response({
+        'results': [
+            {
+                'time': entry.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'level': entry.level,
+                'logger_name': entry.logger_name,
+                'message': entry.message,
+            }
+            for entry in page
+        ],
+        'count': paginator.count,
+        'page': page.number,
+        'num_pages': paginator.num_pages,
+        'has_previous': page.has_previous(),
+        'has_next': page.has_next(),
+        'start_index': page.start_index() if paginator.count else 0,
+        'end_index': page.end_index(),
+    })

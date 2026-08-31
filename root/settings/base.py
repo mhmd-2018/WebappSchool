@@ -47,9 +47,13 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'User.User'
 
 REST_FRAMEWORK = {
+    # SessionAuthentication is deliberately excluded: the frontend talks to this
+    # API purely via token auth over fetch() with no CSRF token attached. If a
+    # browser also happens to hold an active Django session (e.g. logged into
+    # /admin/ or /logs/ in the same browser), SessionAuthentication enforces CSRF
+    # on every request and every POST here 403s regardless of the token header.
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

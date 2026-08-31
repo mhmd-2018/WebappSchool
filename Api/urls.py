@@ -12,4 +12,7 @@ urlpatterns = [
     path('enrollments/', views.enrollments),
     path('contacts/', views.contact_create),
     path('feedbacks/', views.feedback_create),
+    path('admin/overview/', views.admin_overview),
+    path('admin/messages/<int:pk>/read/', views.admin_mark_message_read),
+    path('admin/logs/', views.admin_logs),
 ]

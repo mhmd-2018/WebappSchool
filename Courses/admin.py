@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Contact, Course, CourseEnrollment, Enrollment, Package, Review
+from .models import Category, Contact, Course, CourseEnrollment, Enrollment, Package, Review, Transaction
 
 
 @admin.register(Category)
@@ -31,8 +31,14 @@ class CourseEnrollmentAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'subject', 'created_at']
-    list_filter = ['subject']
+    list_display = ['name', 'email', 'subject', 'is_read', 'created_at']
+    list_filter = ['subject', 'is_read']
+
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['label', 'type', 'amount', 'created_at']
+    list_filter = ['type']
 
 
 @admin.register(Package)
