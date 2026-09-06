@@ -37,12 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'import_export',
     'User',
     'Courses',
     'Profile',
     'Api',
     'log_viewer'
 ]
+
+# django-import-export: wrap each import in a transaction so a bad row rolls
+# back the whole file instead of leaving a half-imported sheet in the DB.
+IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 AUTH_USER_MODEL = 'User.User'
 

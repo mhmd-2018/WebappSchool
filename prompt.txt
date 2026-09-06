@@ -1,0 +1,20 @@
+I need to set up Excel (.xlsx) import functionality in my Django project using the `django-import-export` library. Please provide the complete code and step-by-step instructions for the following:
+
+1. Install the `django-import-export` package (mention adding it to `INSTALLED_APPS` and running pip install).
+2. Assume I have a Django model named `Courses` with the following fields:
+   - `title` (CharField)
+   - `category` (DecimalField)
+   - `quantity` (IntegerField)
+   - `description` (TextField, blank=True, null=True)
+   - `instructor_name`
+   - `source_url`
+3. Create a `ModelResource` subclass for this model that:
+   - Maps Excel columns to model fields. Assume the Excel file has header row with column names exactly matching the model field names (e.g., "name", "price", etc.). You may also show how to handle different column names if needed.
+   - Optionally, add basic validation (e.g., skip rows with empty required fields) and show how to customize the `skip_row` or `before_import_row` methods if needed, but keep it simple.
+4. Register the resource with the model's `ModelAdmin` so that an "Import" button appears in the Django admin change list page. Provide the admin registration code and explain where to place the files.
+5. Explain how to run the import from the admin interface (uploading the .xlsx file) and what happens during the import (dry‑run, error reporting, etc.).
+6. Include any necessary imports and file structure (e.g., `admin.py`, `resources.py`).
+7. Mention any configuration settings needed in `settings.py` (e.g., `IMPORT_EXPORT_USE_TRANSACTIONS`, `IMPORT_EXPORT_SKIP_ADMIN_LOG` if relevant).
+8. Provide a brief note on how to export data as well (since the library supports it), but focus mainly on import.
+
+Please give the answer in a clear, structured format with code blocks and explanations. Assume the Django project structure is standard (app named `Courses`).

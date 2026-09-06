@@ -1,6 +1,8 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from .models import Category, Contact, Course, CourseEnrollment, Enrollment, Package, Review, Transaction
+from .resources import CourseResource
 
 
 @admin.register(Category)
@@ -10,9 +12,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'level', 'price', 'is_published', 'average_rating']
-    list_filter = ['category', 'level', 'origin', 'is_free', 'is_published']
+class CourseAdmin(ImportExportModelAdmin):
+    resource_classes = [CourseResource]
+    list_display = ['title', 'category', 'is_published', 'average_rating']
+    list_filter = ['category',  'origin', 'is_free', 'is_published']
     search_fields = ['title', 'instructor_name', 'provider_name']
     prepopulated_fields = {'slug': ('title',)}
 
