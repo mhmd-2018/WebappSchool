@@ -19,7 +19,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         if obj.user:
             return obj.user.full_name or obj.user.email
-        return 'Anonymous'
+        return 'ناشناس'
 
 
 class CourseSerializer(serializers.ModelSerializer):

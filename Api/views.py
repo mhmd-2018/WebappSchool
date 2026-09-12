@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, BasePermission, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from Courses.models import Contact, Course, CourseEnrollment, Review, Transaction
+from Courses.models import Category, Contact, Course, CourseEnrollment, Review, Transaction
 from log_viewer.models import LogEntry
 from User.models import phone_validator
 
@@ -45,13 +45,13 @@ def register(request):
     password = request.data.get('password') or ''
 
     if not name or not phone or len(password) < 6:
-        return Response({'error': 'Please fill all fields. Password must be at least 6 characters.'}, status=400)
+        return Response({'error': 'لطفاً تمام فیلدها را پر کنید. رمز عبور باید حداقل ۶ کاراکتر باشد.'}, status=400)
     try:
         phone_validator(phone)
     except ValidationError:
-        return Response({'error': 'Please enter a valid phone number (e.g. 09123456789).'}, status=400)
+        return Response({'error': 'لطفاً یک شماره تلفن معتبر وارد کنید (مثلاً 09123456789).'}, status=400)
     if User.objects.filter(phone_number=phone).exists():
-        return Response({'error': 'An account with this phone number already exists.'}, status=400)
+        return Response({'error': 'حسابی با این شماره تلفن قبلاً ثبت شده است.'}, status=400)
 
     user = User.objects.create_user(phone_number=phone, password=password, full_name=name)
     token, _ = Token.objects.get_or_create(user=user)
@@ -66,7 +66,7 @@ def login_view(request):
 
     user = authenticate(request, username=phone, password=password)
     if user is None:
-        return Response({'error': 'Invalid phone number or password.'}, status=400)
+        return Response({'error': 'شماره تلفن یا رمز عبور نامعتبر است.'}, status=400)
 
     token, _ = Token.objects.get_or_create(user=user)
     return Response({'token': token.key, 'user': _user_payload(user)})
@@ -104,12 +104,18 @@ def course_list(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def category_list(request):
+    return Response(list(Category.objects.order_by('name').values_list('name', flat=True)))
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def course_detail(request, pk):
     course = Course.objects.select_related('category').prefetch_related('reviews__user').filter(
         pk=pk, is_published=True
     ).first()
     if not course:
-        return Response({'error': 'Course not found.'}, status=404)
+        return Response({'error': 'دوره پیدا نشد.'}, status=404)
     return Response(CourseSerializer(course).data)
 
 
@@ -122,7 +128,7 @@ def enrollments(request):
 
     course = Course.objects.filter(pk=request.data.get('course'), is_published=True).first()
     if not course:
-        return Response({'error': 'Course not found.'}, status=404)
+        return Response({'error': 'دوره پیدا نشد.'}, status=404)
     enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
     return Response({'course': enrollment.course_id, 'progress': enrollment.progress}, status=201)
 
@@ -136,7 +142,7 @@ def contact_create(request):
     message = (request.data.get('message') or '').strip()
 
     if not all([name, email, subject, message]):
-        return Response({'error': 'Please fill all required fields.'}, status=400)
+        return Response({'error': 'لطفاً تمام فیلدهای الزامی را پر کنید.'}, status=400)
 
     Contact.objects.create(name=name, email=email, subject=subject, message=message)
     return Response(status=201)
@@ -151,7 +157,7 @@ def feedback_create(request):
     recommend = request.data.get('recommend') or 'yes'
 
     if not course or not rating or not message:
-        return Response({'error': 'Please fill all required fields.'}, status=400)
+        return Response({'error': 'لطفاً تمام فیلدهای الزامی را پر کنید.'}, status=400)
 
     user = request.user if request.user.is_authenticated else None
     if user:
@@ -209,7 +215,7 @@ def admin_overview(request):
         {
             # Matches ReviewSerializer.get_name's fallback so the same review
             # shows the same display name here and on the public course page.
-            'name': (r.user.full_name or r.user.email) if r.user else 'Anonymous',
+            'name': (r.user.full_name or r.user.email) if r.user else 'ناشناس',
             'text': r.comment,
             'rating': r.score,
             'time': r.created_at.strftime('%Y-%m-%d %H:%M'),
@@ -251,7 +257,7 @@ def admin_overview(request):
 def admin_mark_message_read(request, pk):
     contact = Contact.objects.filter(pk=pk).first()
     if not contact:
-        return Response({'error': 'Message not found.'}, status=404)
+        return Response({'error': 'پیام پیدا نشد.'}, status=404)
     contact.is_read = True
     contact.save(update_fields=['is_read'])
     return Response({'id': contact.id, 'is_read': True})

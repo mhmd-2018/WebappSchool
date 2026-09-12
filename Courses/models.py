@@ -24,13 +24,13 @@ class Category(models.Model):
 
 class Course(models.Model):
     class Level(models.TextChoices):
-        BEGINNER = 'beginner', 'Beginner'
-        INTERMEDIATE = 'intermediate', 'Intermediate'
-        ADVANCED = 'advanced', 'Advanced'
+        BEGINNER = 'beginner', 'مبتدی'
+        INTERMEDIATE = 'intermediate', 'متوسط'
+        ADVANCED = 'advanced', 'پیشرفته'
 
     class Origin(models.TextChoices):
-        DOMESTIC = 'domestic', 'Original Production'
-        TRANSLATED = 'translated', 'Translated/Subtitled'
+        DOMESTIC = 'domestic', 'تولید داخل'
+        TRANSLATED = 'translated', 'ترجمه شده'
 
     title = models.CharField(max_length=200, verbose_name='عنوان دوره')
     slug = models.SlugField(max_length=220, unique=True, blank=True, allow_unicode=True)
@@ -171,7 +171,7 @@ class Transaction(models.Model):
 
     type = models.CharField(max_length=10, choices=Type.choices, verbose_name='نوع')
     label = models.CharField(max_length=200, verbose_name='شرح')
-    amount = models.PositiveIntegerField(verbose_name='مبلغ (دلار)')
+    amount = models.PositiveIntegerField(verbose_name='مبلغ (تومان)')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -181,7 +181,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         sign = '+' if self.type == self.Type.INCOME else '-'
-        return f'{self.label} ({sign}{self.amount}$)'
+        return f'{self.label} ({sign}{self.amount} تومان)'
 
 
 class Package(models.Model):

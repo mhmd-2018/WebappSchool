@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Feedback - No. Q</title>
+    <title>بازخورد دوره - No. Q</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,31 +13,31 @@
             <span class="logo-text">No. <span>Q</span></span>
         </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="base.html">Home</a></li>
-            <li><a href="course_list.html">Services</a></li>
-            <li><a href="User_dashboard.html">Dashboard</a></li>
-            <li><a href="contact_us.html">Contact</a></li>
-            <li><a href="feedback.html" class="active">Feedback</a></li>
+            <li><a href="base.html">خانه</a></li>
+            <li><a href="course_list.html">خدمات</a></li>
+            <li><a href="User_dashboard.html">داشبورد</a></li>
+            <li><a href="contact_us.html">تماس</a></li>
+            <li><a href="feedback.html" class="active">نظرات</a></li>
         </ul>
         <div class="nav-auth" id="navAuth"></div>
-        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="باز و بسته کردن منو">
             <span></span><span></span><span></span>
         </button>
     </nav>
 
     <main class="feedback-page">
         <div class="feedback-card" id="feedbackFormCard">
-            <h1>Course Feedback</h1>
-            <p class="feedback-subtitle">We value your feedback! Let us know what you think about our courses so we can keep improving.</p>
+            <h1>بازخورد دوره</h1>
+            <p class="feedback-subtitle">بازخورد شما برای ما ارزشمند است! نظر خود را درباره دوره‌های ما بگویید تا بتوانیم بهتر شویم.</p>
             <form onsubmit="handleFeedbackSubmit(event)">
                 <div class="form-group">
-                    <label>Select Course *</label>
+                    <label>انتخاب دوره *</label>
                     <select id="feedbackCourse" required>
-                        <option value="">Choose a course...</option>
+                        <option value="">یک دوره انتخاب کنید...</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Your Rating *</label>
+                    <label>امتیاز شما *</label>
                     <div class="rating-input" id="ratingStars">
                         <span class="star" data-rating="1" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseout="resetHoverRating()">&#9733;</span>
                         <span class="star" data-rating="2" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseout="resetHoverRating()">&#9733;</span>
@@ -46,41 +46,41 @@
                         <span class="star" data-rating="5" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseout="resetHoverRating()">&#9733;</span>
                     </div>
                     <input type="hidden" id="feedbackRating" value="0" required>
-                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;" id="ratingText">Click to rate</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;" id="ratingText">برای امتیاز دادن کلیک کنید</div>
                 </div>
                 <div class="form-group">
-                    <label>Your Feedback *</label>
-                    <textarea id="feedbackMessage" placeholder="Share your experience with this course... What did you like? What could be improved?" required minlength="15"></textarea>
-                    <div class="char-count"><span id="feedbackCharCount">0</span> / 1000 characters</div>
+                    <label>بازخورد شما *</label>
+                    <textarea id="feedbackMessage" placeholder="تجربه خود را از این دوره به اشتراک بگذارید... چه چیزی را دوست داشتید؟ چه چیزی می‌تواند بهتر شود؟" required minlength="15"></textarea>
+                    <div class="char-count"><span id="feedbackCharCount">0</span> / ۱۰۰۰ کاراکتر</div>
                 </div>
                 <div class="form-group">
-                    <label>Would you recommend this course to others?</label>
+                    <label>آیا این دوره را به دیگران توصیه می‌کنید؟</label>
                     <div style="display:flex;gap:20px;margin-top:6px;">
-                        <label class="form-checkbox"><input type="radio" name="recommend" value="yes" checked> Yes</label>
-                        <label class="form-checkbox"><input type="radio" name="recommend" value="maybe"> Maybe</label>
-                        <label class="form-checkbox"><input type="radio" name="recommend" value="no"> No</label>
+                        <label class="form-checkbox"><input type="radio" name="recommend" value="yes" checked> بله</label>
+                        <label class="form-checkbox"><input type="radio" name="recommend" value="maybe"> شاید</label>
+                        <label class="form-checkbox"><input type="radio" name="recommend" value="no"> خیر</label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">Submit Feedback</button>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">ارسال بازخورد</button>
             </form>
         </div>
         <div class="feedback-card feedback-success" id="feedbackSuccess" style="display:none;">
-            <div class="success-icon">Done</div>
-            <h2>Feedback Submitted!</h2>
-            <p>Thank you for your valuable feedback. We truly appreciate you taking the time to help us improve.</p>
-            <button class="btn btn-outline" style="margin-top:20px;" onclick="resetFeedbackForm()">Submit Another Feedback</button>
+            <div class="success-icon">انجام شد</div>
+            <h2>بازخورد ثبت شد!</h2>
+            <p>از بازخورد ارزشمند شما سپاسگزاریم. بابت وقتی که برای کمک به بهبود ما گذاشتید صمیمانه قدردانیم.</p>
+            <button class="btn btn-outline" style="margin-top:20px;" onclick="resetFeedbackForm()">ثبت بازخورد دیگر</button>
         </div>
     </main>
 
     <footer class="site-footer">
         <div class="footer-links">
-            <a href="base.html">Home</a>
-            <a href="course_list.html">Services</a>
-            <a href="contact_us.html">Contact</a>
-            <a href="feedback.html">Feedback</a>
-            <a href="signup.html">Sign In</a>
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">خدمات</a>
+            <a href="contact_us.html">تماس</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="signup.html">ورود</a>
         </div>
-        <p>&copy; 2026 No. Q. All rights reserved.</p>
+        <p>&copy; ۲۰۲۶ No. Q. تمامی حقوق محفوظ است.</p>
     </footer>
 
     <script src="/static/scripts.js"></script>

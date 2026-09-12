@@ -2,7 +2,7 @@ import logging
 import re
 
 from django.core.exceptions import ValidationError
-from import_export import fields, resources
+from import_export import fields, resources, widgets
 from import_export.widgets import ForeignKeyWidget
 
 from .models import Category, Course
@@ -19,10 +19,52 @@ logger = logging.getLogger(__name__)
 # silently fails to bind to any resource field.
 _INVISIBLE_CHARS = re.compile('[' + ''.join(chr(c) for c in (0x200B, 0x200C, 0x200D, 0x200E, 0x200F, 0xFEFF)) + ']')
 
+# The sheet's real header text varies by who filled it in — English column
+# names one time, Persian labels the next, and sometimes a name that's close
+# but not identical to the model field (e.g. "provider_site" instead of
+# "provider_name", "time_required" instead of "hours"). Map every variant
+# we've actually seen in a real uploaded file to the canonical column name
+# the fields below expect, so any of them just works instead of the column
+# silently being dropped.
+HEADER_ALIASES = {
+    'title': ['title', 'نام دوره', 'عنوان', 'عنوان دوره'],
+    'category': ['category', 'دسته بندی', 'دستهبندی'],
+    'description': ['description', 'توضیحات', 'توضیح'],
+    'instructor_name': ['instructor_name', 'استاد', 'مدرس'],
+    'source_url': ['source_url', 'لینک', 'url'],
+    'provider_name': ['provider_name', 'provider_site', 'provider', 'سایت', 'پلتفرم'],
+    'price': ['price', 'قیمت', 'هزینه'],
+    'level': ['level', 'سطح'],
+    'origin': ['origin', 'origin_language', 'منشا', 'نوع تولید'],
+    'hours': ['hours', 'time_required', 'ساعت', 'مدت زمان', 'مدت'],
+    'curriculum': ['curriculum', 'سرفصل', 'سرفصل ها', 'سرفصل‌ها'],
+    'is_published': ['is_published', 'published', 'منتشر شده'],
+}
+_HEADER_ALIAS_LOOKUP = {
+    alias.strip().lower(): canonical
+    for canonical, aliases in HEADER_ALIASES.items()
+    for alias in aliases
+}
+
+# Only these actually block a row — everything else below has a safe
+# fallback (a parsed number, a matched choice, or the model's own default)
+# so a formatting quirk in a secondary column never throws out an otherwise
+# good row.
 REQUIRED_FIELDS = {
     'title': 'عنوان دوره',
     'category': 'دسته‌بندی',
     'instructor_name': 'مدرس',
+}
+
+LEVEL_SYNONYMS = {
+    Course.Level.BEGINNER: ['beginner', 'مبتدی', 'پایه', 'ابتدایی'],
+    Course.Level.INTERMEDIATE: ['intermediate', 'متوسط', 'میانی'],
+    Course.Level.ADVANCED: ['advanced', 'پیشرفته', 'حرفه‌ای'],
+}
+
+ORIGIN_SYNONYMS = {
+    Course.Origin.DOMESTIC: ['domestic', 'original', 'تولید داخل', 'اورجینال', 'اصلی', 'فارسی'],
+    Course.Origin.TRANSLATED: ['translated', 'ترجمه', 'ترجمه شده', 'دوبله', 'زیرنویس شده'],
 }
 
 
@@ -45,26 +87,96 @@ class CategoryWidget(ForeignKeyWidget):
         return match
 
 
+class LenientIntWidget(widgets.Widget):
+    """Pulls a plain integer out of messy cell text (thousands separators,
+    currency/unit words like "199,000 تومان" or "10 ساعت") instead of
+    raising and invalidating the whole row over a formatting quirk in a
+    field that isn't essential enough to reject the course over."""
+
+    def __init__(self, label):
+        self.label = label
+
+    def clean(self, value, row=None, **kwargs):
+        if value in (None, ''):
+            return 0
+        digits = re.sub(r'[^\d]', '', str(value))
+        if not digits:
+            logger.warning('Course import: could not read a number from "%s" for %s, defaulting to 0.', value, self.label)
+            return 0
+        return int(digits)
+
+    def render(self, value, obj=None):
+        return str(value) if value is not None else ''
+
+
+class SynonymChoiceWidget(widgets.Widget):
+    """Matches a cell against known synonyms (English + Persian) for a
+    TextChoices field and falls back to a default instead of raising, since
+    an unrecognized level/origin shouldn't throw out the whole course."""
+
+    def __init__(self, synonyms, default, label):
+        self.lookup = {syn.strip().lower(): value for value, syns in synonyms.items() for syn in syns}
+        self.default = default
+        self.label = label
+
+    def clean(self, value, row=None, **kwargs):
+        if not value:
+            return self.default
+        match = self.lookup.get(str(value).strip().lower())
+        if match is None:
+            logger.warning('Course import: unrecognized %s value "%s", defaulting to "%s".', self.label, value, self.default)
+            return self.default
+        return match
+
+    def render(self, value, obj=None):
+        return value or ''
+
+
 class CourseResource(resources.ModelResource):
     category = fields.Field(column_name='category', attribute='category', widget=CategoryWidget(Category, field='name'))
-    provider_name = fields.Field(column_name='provider_name', attribute='provider_name')
+    provider_name = fields.Field(column_name='provider_name', attribute='provider_name', widget=widgets.CharWidget())
+    # TextField has no entry in django-import-export's widget map (only
+    # CharField does), so without an explicit CharWidget a blank cell comes
+    # through as Python None instead of '' and violates the DB's NOT NULL
+    # constraint on save.
+    description = fields.Field(column_name='description', attribute='description', widget=widgets.CharWidget())
+    curriculum = fields.Field(column_name='curriculum', attribute='curriculum', widget=widgets.CharWidget())
+    price = fields.Field(column_name='price', attribute='price', widget=LenientIntWidget('قیمت'))
+    hours = fields.Field(column_name='hours', attribute='hours', widget=LenientIntWidget('مدت زمان'))
+    level = fields.Field(
+        column_name='level', attribute='level',
+        widget=SynonymChoiceWidget(LEVEL_SYNONYMS, Course.Level.BEGINNER, 'سطح'),
+    )
+    origin = fields.Field(
+        column_name='origin', attribute='origin',
+        widget=SynonymChoiceWidget(ORIGIN_SYNONYMS, Course.Origin.DOMESTIC, 'منشا'),
+    )
 
     class Meta:
         model = Course
-        import_id_fields = []
+        # Matching on title means re-uploading the same (or a more complete)
+        # sheet updates the existing courses instead of creating duplicates —
+        # important now that a re-import is exactly how you'd backfill fields
+        # an earlier, narrower version of this resource didn't capture yet.
+        import_id_fields = ['title']
         fields = [
-            'title', 'category', 'description', 'instructor_name',
-            'source_url', 'provider_name', 'is_published',
+            'title', 'category', 'description', 'instructor_name', 'source_url',
+            'provider_name', 'price', 'level', 'origin', 'hours', 'curriculum',
+            'is_published',
         ]
         skip_unchanged = True
         report_skipped = True
 
     def before_import(self, dataset, **kwargs):
         raw_headers = list(dataset.headers)
-        dataset.headers = [
-            _INVISIBLE_CHARS.sub('', header).strip() if header else header
-            for header in dataset.headers
-        ]
+
+        def normalize(header):
+            if not header:
+                return header
+            cleaned = _INVISIBLE_CHARS.sub('', header).strip()
+            return _HEADER_ALIAS_LOOKUP.get(cleaned.lower(), cleaned)
+
+        dataset.headers = [normalize(header) for header in dataset.headers]
         logger.info('Course import: raw headers %s -> normalized %s', raw_headers, dataset.headers)
 
     def before_import_row(self, row, row_number=None, **kwargs):

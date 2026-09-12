@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Courses - No. Q</title>
+    <title>همه دوره‌ها - No. Q</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,56 +13,50 @@
             <span class="logo-text">No. <span>Q</span></span>
         </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="base.html">Home</a></li>
-            <li><a href="course_list.html" class="active">Services</a></li>
-            <li><a href="User_dashboard.html">Dashboard</a></li>
-            <li><a href="contact_us.html">Contact</a></li>
-            <li><a href="feedback.html">Feedback</a></li>
-                    <!-- <li><a href="profile_alter.html">Profile</a></li> -->
+            <li><a href="base.html">خانه</a></li>
+            <li><a href="course_list.html" class="active">خدمات</a></li>
+            <li><a href="User_dashboard.html">داشبورد</a></li>
+            <li><a href="contact_us.html">تماس</a></li>
+            <li><a href="feedback.html">نظرات</a></li>
+                    <!-- <li><a href="profile_alter.html">پروفایل</a></li> -->
         </ul>
         <div class="nav-auth" id="navAuth"></div>
-        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="باز و بسته کردن منو">
             <span></span><span></span><span></span>
         </button>
     </nav>
 
     <main class="courses-page">
         <div class="page-header">
-            <h1>Explore All Courses</h1>
-            <p>Browse through our curated collection of high-quality courses across every category.</p>
+            <h1>کاوش همه دوره‌ها</h1>
+            <p>در مجموعه‌ای منتخب از دوره‌های باکیفیت در تمام دسته‌بندی‌ها مرور کنید.</p>
         </div>
         <div class="courses-toolbar">
             <div class="search-inline">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" id="coursesSearchInput" placeholder="Filter courses..." oninput="filterCourses()">
+                <input type="text" id="coursesSearchInput" placeholder="فیلتر دوره‌ها..." oninput="filterCourses()">
             </div>
             <select class="filter-select" id="categoryFilter" onchange="filterCourses()">
-                <option value="all">All Categories</option>
-                <option value="Technology">Technology</option>
-                <option value="Design">Design</option>
-                <option value="Business">Business</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Data Science">Data Science</option>
-                <option value="Personal Development">Personal Development</option>
+                <option value="all">همه دسته‌بندی‌ها</option>
             </select>
         </div>
         <div class="courses-list" id="coursesList"></div>
         <div class="no-results" id="noResults" style="display:none;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6"/></svg>
-            <h3>No courses found</h3>
-            <p>Try adjusting your search or filters.</p>
+            <h3>دوره‌ای یافت نشد</h3>
+            <p>جستجو یا فیلترهای خود را تغییر دهید.</p>
         </div>
     </main>
 
     <footer class="site-footer">
         <div class="footer-links">
-            <a href="base.html">Home</a>
-            <a href="course_list.html">Services</a>
-            <a href="contact_us.html">Contact</a>
-            <a href="feedback.html">Feedback</a>
-            <a href="signup.html">Sign In</a>
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">خدمات</a>
+            <a href="contact_us.html">تماس</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="signup.html">ورود</a>
         </div>
-        <p>&copy; 2026 No. Q. All rights reserved.</p>
+        <p>&copy; ۲۰۲۶ No. Q. تمامی حقوق محفوظ است.</p>
     </footer>
 
     <script src="/static/scripts.js"></script>

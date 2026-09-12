@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - No. Q</title>
+    <title>داشبورد - No. Q</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,85 +13,85 @@
             <span class="logo-text">No. <span>Q</span></span>
         </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="base.html">Home</a></li>
-            <li><a href="course_list.html">Services</a></li>
-            <li><a href="User_dashboard.html" class="active">Dashboard</a></li>
-            <li><a href="contact_us.html">Contact</a></li>
-            <li><a href="feedback.html">Feedback</a></li>
-                    <!-- <li><a href="profile_alter.html">Profile</a></li> -->
+            <li><a href="base.html">خانه</a></li>
+            <li><a href="course_list.html">خدمات</a></li>
+            <li><a href="User_dashboard.html" class="active">داشبورد</a></li>
+            <li><a href="contact_us.html">تماس</a></li>
+            <li><a href="feedback.html">نظرات</a></li>
+                    <!-- <li><a href="profile_alter.html">پروفایل</a></li> -->
         </ul>
         <div class="nav-auth" id="navAuth"></div>
-        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="باز و بسته کردن منو">
             <span></span><span></span><span></span>
         </button>
     </nav>
 
     <main class="dashboard-page">
         <div class="page-header">
-            <h1>Your Dashboard</h1>
-            <p>Track your learning progress and manage your courses.</p>
+            <h1>داشبورد شما</h1>
+            <p>پیشرفت یادگیری خود را پیگیری و دوره‌هایتان را مدیریت کنید.</p>
         </div>
         <div class="dashboard-layout">
             <aside class="dashboard-sidebar">
                 <div class="user-card">
                     <div class="user-avatar" id="dashAvatar">U</div>
                     <div class="user-info">
-                        <div class="user-name" id="dashUserName">User</div>
+                        <div class="user-name" id="dashUserName">کاربر</div>
                         <div class="user-email" id="dashUserEmail">user@example.com</div>
                     </div>
                 </div>
                 <ul class="sidebar-menu">
-                    <li><a class="active" onclick="showDashSection('overview',this)">Overview</a></li>
-                    <li><a onclick="showDashSection('myCourses',this)">My Courses</a></li>
-                    <li><a onclick="showDashSection('activity',this)">Activity</a></li>
-                    <li><a href="contact_us.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
-                    <li><a href="profile_alter.html">Profile</a></li>
-                    <li><a class="logout-btn" onclick="handleLogout()">Logout</a></li>
+                    <li><a class="active" onclick="showDashSection('overview',this)">نمای کلی</a></li>
+                    <li><a onclick="showDashSection('myCourses',this)">دوره‌های من</a></li>
+                    <li><a onclick="showDashSection('activity',this)">فعالیت‌ها</a></li>
+                    <li><a href="contact_us.html">تماس</a></li>
+                    <li><a href="feedback.html">نظرات</a></li>
+                    <li><a href="profile_alter.html">پروفایل</a></li>
+                    <li><a class="logout-btn" onclick="handleLogout()">خروج</a></li>
                 </ul>
             </aside>
             <div class="dashboard-main">
                 <div class="dashboard-welcome">
-                    <h2>Welcome back, <span id="dashWelcomeName">User</span>!</h2>
-                    <p>You're doing great. Keep up the momentum!</p>
+                    <h2>خوش آمدید، <span id="dashWelcomeName">کاربر</span>!</h2>
+                    <p>عالی پیش می‌روید. همین روند را ادامه دهید!</p>
                 </div>
                 <div id="dashSection-overview">
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-icon blue">Enrolled</div>
+                            <div class="stat-icon blue">ثبت‌نام</div>
                             <div class="stat-value" id="statEnrolled">0</div>
-                            <div class="stat-label">Enrolled Courses</div>
+                            <div class="stat-label">دوره‌های ثبت‌نام شده</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon green">Done</div>
+                            <div class="stat-icon green">انجام</div>
                             <div class="stat-value" id="statCompleted">0</div>
-                            <div class="stat-label">Completed</div>
+                            <div class="stat-label">تکمیل شده</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon yellow">Hrs</div>
+                            <div class="stat-icon yellow">ساعت</div>
                             <div class="stat-value" id="statHours">0</div>
-                            <div class="stat-label">Hours Learned</div>
+                            <div class="stat-label">ساعات یادگیری</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon purple">Cert</div>
+                            <div class="stat-icon purple">گواهی</div>
                             <div class="stat-value" id="statCertificates">0</div>
-                            <div class="stat-label">Certificates</div>
+                            <div class="stat-label">گواهی‌نامه‌ها</div>
                         </div>
                     </div>
                     <div class="dashboard-section" style="margin-top:20px;">
-                        <h3>Continue Learning</h3>
+                        <h3>ادامه یادگیری</h3>
                         <div id="continueLearningList"></div>
                     </div>
                 </div>
                 <div id="dashSection-myCourses" style="display:none;">
                     <div class="dashboard-section">
-                        <h3>My Enrolled Courses</h3>
+                        <h3>دوره‌های ثبت‌نام شده من</h3>
                         <div id="enrolledCoursesList"></div>
                     </div>
                 </div>
                 <div id="dashSection-activity" style="display:none;">
                     <div class="dashboard-section">
-                        <h3>Recent Activity</h3>
+                        <h3>فعالیت‌های اخیر</h3>
                         <ul class="activity-list" id="activityList"></ul>
                     </div>
                 </div>
@@ -101,13 +101,13 @@
 
     <footer class="site-footer">
         <div class="footer-links">
-            <a href="base.html">Home</a>
-            <a href="course_list.html">Services</a>
-            <a href="contact_us.html">Contact</a>
-            <a href="feedback.html">Feedback</a>
-            <a href="signup.html">Sign In</a>
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">خدمات</a>
+            <a href="contact_us.html">تماس</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="signup.html">ورود</a>
         </div>
-        <p>&copy; 2026 No. Q. All rights reserved.</p>
+        <p>&copy; ۲۰۲۶ No. Q. تمامی حقوق محفوظ است.</p>
     </footer>
 
     <script src="/static/scripts.js"></script>

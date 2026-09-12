@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up / Sign In - Studia</title>
+    <title>ثبت‌نام / ورود - Studia</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,15 +13,15 @@
             <span class="logo-text">Studia </span>
         </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="base.html">Home</a></li>
-            <li><a href="course_list.html">Services</a></li>
-            <li><a href="User_dashboard.html">Dashboard</a></li>
-            <li><a href="contact_us.html">Contact</a></li>
-            <li><a href="feedback.html">Feedback</a></li>
-                    <!-- <li><a href="profile_alter.html">Profile</a></li> -->
+            <li><a href="base.html">خانه</a></li>
+            <li><a href="course_list.html">خدمات</a></li>
+            <li><a href="User_dashboard.html">داشبورد</a></li>
+            <li><a href="contact_us.html">تماس</a></li>
+            <li><a href="feedback.html">نظرات</a></li>
+                    <!-- <li><a href="profile_alter.html">پروفایل</a></li> -->
         </ul>
         <div class="nav-auth" id="navAuth"></div>
-        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="باز و بسته کردن منو">
             <span></span><span></span><span></span>
         </button>
     </nav>
@@ -30,70 +30,70 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-logo">S</div>
-                <h2 id="authTitle">Welcome Back</h2>
-                <p id="authSubtitle">Sign in to continue your learning journey</p>
+                <h2 id="authTitle">خوش آمدید</h2>
+                <p id="authSubtitle">برای ادامه سفر یادگیری خود وارد شوید</p>
             </div>
             <div class="auth-tabs">
-                <button id="tabSignIn" class="active" onclick="switchAuthTab('signin')">Sign In</button>
-                <button id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</button>
+                <button id="tabSignIn" class="active" onclick="switchAuthTab('signin')">ورود</button>
+                <button id="tabSignUp" onclick="switchAuthTab('signup')">ثبت‌نام</button>
             </div>
             <div id="signinForm">
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label>شماره تلفن</label>
                     <div class="input-with-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
                         <input type="tel" id="signinPhone" placeholder="09123456789" autocomplete="tel">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
+                    <label>رمز عبور</label>
                     <div class="input-with-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                        <input type="password" id="signinPassword" placeholder="Enter your password" autocomplete="current-password">
+                        <input type="password" id="signinPassword" placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
                     </div>
-                    <div class="error-msg" id="signinError">Invalid phone number or password.</div>
+                    <div class="error-msg" id="signinError">شماره تلفن یا رمز عبور نامعتبر است.</div>
                 </div>
-                <button class="btn btn-primary btn-lg" onclick="handleSignIn()">Sign In</button>
-                <div class="auth-footer">Don't have an account? <a onclick="switchAuthTab('signup')">Sign Up</a></div>
+                <button class="btn btn-primary btn-lg" onclick="handleSignIn()">ورود</button>
+                <div class="auth-footer">حساب کاربری ندارید؟ <a onclick="switchAuthTab('signup')">ثبت‌نام</a></div>
             </div>
             <div id="signupForm" style="display:none;">
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label>نام کامل</label>
                     <div class="input-with-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <input type="text" id="signupName" placeholder="John Doe" autocomplete="name">
+                        <input type="text" id="signupName" placeholder="علی رضایی" autocomplete="name">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label>شماره تلفن</label>
                     <div class="input-with-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
                         <input type="tel" id="signupPhone" placeholder="09123456789" autocomplete="tel">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
+                    <label>رمز عبور</label>
                     <div class="input-with-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                        <input type="password" id="signupPassword" placeholder="Minimum 6 characters" autocomplete="new-password">
+                        <input type="password" id="signupPassword" placeholder="حداقل ۶ کاراکتر" autocomplete="new-password">
                     </div>
-                    <div class="error-msg" id="signupError">Please fill all fields correctly. Password must be 6+ chars.</div>
+                    <div class="error-msg" id="signupError">لطفاً تمام فیلدها را به‌درستی پر کنید. رمز عبور باید حداقل ۶ کاراکتر باشد.</div>
                 </div>
-                <button class="btn btn-primary btn-lg" onclick="handleSignUp()">Create Account</button>
-                <div class="auth-footer">Already have an account? <a onclick="switchAuthTab('signin')">Sign In</a></div>
+                <button class="btn btn-primary btn-lg" onclick="handleSignUp()">ایجاد حساب</button>
+                <div class="auth-footer">قبلاً حساب کاربری دارید؟ <a onclick="switchAuthTab('signin')">ورود</a></div>
             </div>
         </div>
     </main>
 
     <footer class="site-footer">
         <div class="footer-links">
-            <a href="base.html">Home</a>
-            <a href="course_list.html">Services</a>
-            <a href="contact_us.html">Contact</a>
-            <a href="feedback.html">Feedback</a>
-            <a href="signup.html">Sign In</a>
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">خدمات</a>
+            <a href="contact_us.html">تماس</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="signup.html">ورود</a>
         </div>
-        <p>2026 No. Q. All rights reserved.</p>
+        <p>۲۰۲۶ No. Q. تمامی حقوق محفوظ است.</p>
     </footer>
 
     <script src="/static/scripts.js"></script>

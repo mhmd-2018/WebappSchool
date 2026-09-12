@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studia — Courses without borders</title>
+    <title>Studia — دوره‌های بدون مرز</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,15 +13,15 @@
             <span class="logo-text">Studia </span>
         </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="base.html" class="active">Home</a></li>
-            <li><a href="course_list.html">Services</a></li>
-            <li><a href="User_dashboard.html">Dashboard</a></li>
-            <li><a href="contact_us.html">Contact</a></li>
-            <li><a href="feedback.html">Feedback</a></li>
-                    <!-- <li><a href="profile_alter.html">Profile</a></li> -->
+            <li><a href="base.html" class="active">خانه</a></li>
+            <li><a href="course_list.html">خدمات</a></li>
+            <li><a href="User_dashboard.html">داشبورد</a></li>
+            <li><a href="contact_us.html">تماس</a></li>
+            <li><a href="feedback.html">نظرات</a></li>
+                    <!-- <li><a href="profile_alter.html">پروفایل</a></li> -->
         </ul>
         <div class="nav-auth" id="navAuth"></div>
-        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="باز و بسته کردن منو">
             <span></span><span></span><span></span>
         </button>
     </nav>
@@ -33,44 +33,37 @@
         <div class="hero-content">
             <!-- <div class="hero-badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8L12 2z"/></svg>
-                Trusted by 50,000+ clients worldwide
+                مورد اعتماد بیش از ۵۰٬۰۰۰ کاربر در سراسر جهان
             </div> -->
-            <h1 class="hero-title">Innovate. Build.<br><span class="gradient-text">Scale Without Limits.</span></h1>
-            <p class="hero-subtitle">Access 1,000+ expert-led courses across technology, design, business, and more. Start your learning journey today with Studia.</p>
+            <h1 class="hero-title">نوآوری کن. بساز.<br><span class="gradient-text">بدون محدودیت رشد کن.</span></h1>
+            <p class="hero-subtitle">به بیش از ۱٬۰۰۰ دوره تخصصی در حوزه فناوری، طراحی، کسب‌وکار و بیشتر دسترسی داشته باشید. سفر یادگیری خود را همین امروز با Studia آغاز کنید.</p>
             <div class="search-container">
                 <div class="search-bar">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                    <input type="text" id="heroSearchInput" placeholder="Search for any course, topic, or skill..." autocomplete="off" oninput="showSuggestions(this.value)" onfocus="showSuggestions(this.value)" onblur="setTimeout(()=>hideSuggestions(),200)">
-                    <button class="btn btn-primary" onclick="searchFromHero()">Search</button>
+                    <input type="text" id="heroSearchInput" placeholder="جستجوی هر دوره، موضوع یا مهارت..." autocomplete="off" oninput="showSuggestions(this.value)" onfocus="showSuggestions(this.value)" onblur="setTimeout(()=>hideSuggestions(),200)">
+                    <button class="btn btn-primary" onclick="searchFromHero()">جستجو</button>
                 </div>
                 <div class="search-suggestions" id="searchSuggestions"></div>
             </div>
-            <div class="hero-categories">
-                <a class="category-pill" href="course_list.html?category=Technology">Technology</a>
-                <a class="category-pill" href="course_list.html?category=Design">Design</a>
-                <a class="category-pill" href="course_list.html?category=Business">Business</a>
-                <a class="category-pill" href="course_list.html?category=Marketing">Marketing</a>
-                <a class="category-pill" href="course_list.html?category=Data Science">Data Science</a>
-                <a class="category-pill" href="course_list.html?category=Personal Development">Personal Dev</a>
-            </div>
+            <div class="hero-categories" id="heroCategories"></div>
             <!-- <div class="hero-stats">
-                <div class="stat-item"><div class="stat-number">1,200+</div><div class="stat-label">Courses</div></div>
-                <div class="stat-item"><div class="stat-number">50K+</div><div class="stat-label">Students</div></div>
-                <div class="stat-item"><div class="stat-number">300+</div><div class="stat-label">Expert Instructors</div></div>
-                <div class="stat-item"><div class="stat-number">4.8/5</div><div class="stat-label">Average Rating</div></div>
+                <div class="stat-item"><div class="stat-number">۱٬۲۰۰+</div><div class="stat-label">دوره</div></div>
+                <div class="stat-item"><div class="stat-number">۵۰ هزار+</div><div class="stat-label">دانشجو</div></div>
+                <div class="stat-item"><div class="stat-number">۳۰۰+</div><div class="stat-label">مدرس متخصص</div></div>
+                <div class="stat-item"><div class="stat-number">۴.۸/۵</div><div class="stat-label">میانگین امتیاز</div></div>
             </div> -->
         </div>
     </section>
 
     <footer class="site-footer">
         <div class="footer-links">
-            <a href="base.html">Home</a>
-            <a href="course_list.html">Services</a>
-            <a href="contact_us.html">Contact</a>
-            <a href="feedback.html">Feedback</a>
-            <a href="signup.html">Sign In</a>
+            <a href="base.html">خانه</a>
+            <a href="course_list.html">خدمات</a>
+            <a href="contact_us.html">تماس</a>
+            <a href="feedback.html">نظرات</a>
+            <a href="signup.html">ورود</a>
         </div>
-        <p>2026 No. Q. All rights reserved.</p>
+        <p>۲۰۲۶ No. Q. تمامی حقوق محفوظ است.</p>
     </footer>
 
     <script src="/static/scripts.js"></script>

@@ -64,12 +64,12 @@ function updateNavAuth() {
         if (currentUser) {
             el.innerHTML = `
                 <span style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);">${escapeHtml(currentUser.name.split(' ')[0])}</span>
-                <button class="btn btn-outline btn-sm" onclick="handleLogout()">Logout</button>
+                <button class="btn btn-outline btn-sm" onclick="handleLogout()">خروج</button>
             `;
         } else {
             el.innerHTML = `
-                <button class="btn btn-outline btn-sm" onclick="window.location.href='signup.html'">Sign In</button>
-                <button class="btn btn-primary btn-sm" onclick="window.location.href='signup.html'">Sign Up</button>
+                <button class="btn btn-outline btn-sm" onclick="window.location.href='signup.html'">ورود</button>
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='signup.html'">ثبت‌نام</button>
             `;
         }
     });
@@ -84,7 +84,7 @@ function updateAdminNavLink() {
         if (currentUser && currentUser.is_staff) {
             if (!existing) {
                 const li = document.createElement('li');
-                li.innerHTML = '<a href="admin_dashboard.html">Admin</a>';
+                li.innerHTML = '<a href="admin_dashboard.html">مدیریت</a>';
                 navLinks.appendChild(li);
             }
         } else if (existing && !existing.classList.contains('active')) {
@@ -107,8 +107,8 @@ function switchAuthTab(mode) {
     document.getElementById('signupForm').style.display = mode === 'signup' ? 'block' : 'none';
     document.getElementById('tabSignIn').classList.toggle('active', mode === 'signin');
     document.getElementById('tabSignUp').classList.toggle('active', mode === 'signup');
-    document.getElementById('authTitle').textContent = mode === 'signin' ? 'Welcome Back' : 'Create Account';
-    document.getElementById('authSubtitle').textContent = mode === 'signin' ? 'Sign in to continue your learning journey' : 'Join No. Q and start learning today';
+    document.getElementById('authTitle').textContent = mode === 'signin' ? 'خوش آمدید' : 'ایجاد حساب کاربری';
+    document.getElementById('authSubtitle').textContent = mode === 'signin' ? 'برای ادامه سفر یادگیری خود وارد شوید' : 'به Studia بپیوندید و امروز یادگیری را شروع کنید';
     document.getElementById('signinError').classList.remove('show');
     document.getElementById('signupError').classList.remove('show');
 }
@@ -128,11 +128,11 @@ async function handleSignIn() {
             updateNavAuth();
             window.location.href = data.user.is_staff ? 'admin_dashboard.html' : 'User_dashboard.html';
         } else {
-            errorEl.textContent = 'Invalid phone number or password.';
+            errorEl.textContent = 'شماره تلفن یا رمز عبور نامعتبر است.';
             errorEl.classList.add('show');
         }
     } catch (err) {
-        errorEl.textContent = (err.data && err.data.error) || 'Invalid phone number or password.';
+        errorEl.textContent = (err.data && err.data.error) || 'شماره تلفن یا رمز عبور نامعتبر است.';
         errorEl.classList.add('show');
     }
 }
@@ -144,7 +144,7 @@ async function handleSignUp() {
     const errorEl = document.getElementById('signupError');
 
     if (!name || !phone || !password || password.length < 6) {
-        errorEl.textContent = 'Please fill all fields. Password must be at least 6 characters.';
+        errorEl.textContent = 'لطفاً تمام فیلدها را به‌درستی پر کنید. رمز عبور باید حداقل ۶ کاراکتر باشد.';
         errorEl.classList.add('show');
         return;
     }
@@ -159,11 +159,11 @@ async function handleSignUp() {
             updateNavAuth();
             window.location.href = data.user.is_staff ? 'admin_dashboard.html' : 'User_dashboard.html';
         } else {
-            errorEl.textContent = 'Registration failed.';
+            errorEl.textContent = 'ثبت‌نام ناموفق بود.';
             errorEl.classList.add('show');
         }
     } catch (err) {
-        errorEl.textContent = (err.data && err.data.error) || 'Registration failed.';
+        errorEl.textContent = (err.data && err.data.error) || 'ثبت‌نام ناموفق بود.';
         errorEl.classList.add('show');
     }
 }
@@ -239,6 +239,37 @@ function searchFromHero() {
     }
 }
 
+async function populateCategoryFilter() {
+    const select = document.getElementById('categoryFilter');
+    if (!select) return;
+    let categories = [];
+    try {
+        categories = await apiRequest('/categories/');
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+        return;
+    }
+    const current = select.value;
+    select.innerHTML = '<option value="all">همه دسته‌بندی‌ها</option>' +
+        categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    if (categories.includes(current)) select.value = current;
+}
+
+async function populateHeroCategories() {
+    const container = document.getElementById('heroCategories');
+    if (!container) return;
+    let categories = [];
+    try {
+        categories = await apiRequest('/categories/');
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+        return;
+    }
+    container.innerHTML = categories.map(name =>
+        `<a class="category-pill" href="course_list.html?category=${encodeURIComponent(name)}">${escapeHtml(name)}</a>`
+    ).join('');
+}
+
 function filterCourses() {
     const query = document.getElementById('coursesSearchInput').value.trim().toLowerCase();
     const category = document.getElementById('categoryFilter').value;
@@ -266,10 +297,10 @@ function filterCourses() {
                 </div>
                 <p class="course-summary">${escapeHtml(c.summary)}</p>
                 <div class="course-meta">
-                    <span>${escapeHtml(c.instructor) || 'No. Q Team'}</span>
-                    <span>${c.lessons || 0} lessons</span>
-                    <span>${c.hours || 0}h</span>
-                    <span>${escapeHtml(c.level) || 'All Levels'}</span>
+                    <span>${escapeHtml(c.instructor) || 'تیم Studia'}</span>
+                    <span>${c.lessons || 0} جلسه</span>
+                    <span>${c.hours || 0} ساعت</span>
+                    <span>${escapeHtml(c.level) || 'همه سطوح'}</span>
                 </div>
             </div>
         </div>
@@ -288,7 +319,7 @@ async function loadCourseDetail() {
     }
 
     if (!course) {
-        container.innerHTML = '<h2>Course not found.</h2>';
+        container.innerHTML = '<h2>دوره پیدا نشد.</h2>';
         return;
     }
 
@@ -303,12 +334,12 @@ async function loadCourseDetail() {
                 <div class="rating-box">
                     <span class="rating-num">${course.rating}</span>
                     <span class="stars">${'&#9733;'.repeat(Math.floor(course.rating))}</span>
-                    <span class="rating-count">(${course.rating_count ? course.rating_count.toLocaleString() : '0'} ratings)</span>
+                    <span class="rating-count">(${course.rating_count ? course.rating_count.toLocaleString() : '0'} امتیاز)</span>
                 </div>
-                <div class="instructor">Instructor: <strong>${escapeHtml(course.instructor) || 'No. Q Team'}</strong></div>
+                <div class="instructor">مدرس: <strong>${escapeHtml(course.instructor) || 'تیم Studia'}</strong></div>
                 <p class="description">${escapeHtml(course.summary)}</p>
                 <div class="course-curriculum">
-                    <h2>What You'll Learn</h2>
+                    <h2>چیزی که یاد می‌گیرید</h2>
                     <div class="module-list">
                         ${modules.map((mod, idx) => `
                             <div class="module-item">
@@ -321,17 +352,17 @@ async function loadCourseDetail() {
                 <div class="instructor-bio">
                     <div class="avatar">${avatarInitial(course.instructor, 'N')}</div>
                     <div class="bio-text">
-                        <h4>About ${escapeHtml(course.instructor) || 'No. Q Team'}</h4>
-                        <p>${escapeHtml(course.instructor_bio) || 'Expert instructor at No. Q.'}</p>
+                        <h4>درباره ${escapeHtml(course.instructor) || 'تیم Studia'}</h4>
+                        <p>${escapeHtml(course.instructor_bio) || 'مدرس متخصص در Studia.'}</p>
                     </div>
                 </div>
                 <div class="reviews-section">
-                    <h2>Student Reviews</h2>
+                    <h2>نظرات دانشجویان</h2>
                     ${reviews.map(r => `
                         <div class="review-item">
                             <div class="review-avatar">${avatarInitial(r.name, 'A')}</div>
                             <div class="review-content">
-                                <div class="review-name">${escapeHtml(r.name) || 'Anonymous'}</div>
+                                <div class="review-name">${escapeHtml(r.name) || 'ناشناس'}</div>
                                 <div class="review-rating">${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5-r.rating)}</div>
                                 <p class="review-text">${escapeHtml(r.text || r.comment) || ''}</p>
                             </div>
@@ -341,15 +372,15 @@ async function loadCourseDetail() {
             </div>
             <div class="detail-right">
                 <div class="detail-card">
-                    <div class="price">$${course.price} ${course.original_price ? '<span class="original">$' + course.original_price + '</span>' : ''}</div>
-                    <button class="btn btn-primary btn-lg enroll-btn" onclick="attemptCourse(${course.id})">Attempt Course</button>
+                    <div class="price">${course.price ? course.price.toLocaleString() : 0} تومان ${course.original_price ? '<span class="original">' + course.original_price.toLocaleString() + ' تومان</span>' : ''}</div>
+                    <button class="btn btn-primary btn-lg enroll-btn" onclick="attemptCourse(${course.id})">شروع دوره</button>
                     <div class="course-stats">
-                        <span>${course.lessons || 0} lessons</span>
-                        <span>${course.hours || 0} hours of content</span>
-                        <span>${course.level || 'All Levels'}</span>
-                        <span>English</span>
-                        <span>Lifetime access</span>
-                        <span>Access on mobile</span>
+                        <span>${course.lessons || 0} جلسه</span>
+                        <span>${course.hours || 0} ساعت محتوا</span>
+                        <span>${course.level || 'همه سطوح'}</span>
+                        <span>فارسی</span>
+                        <span>دسترسی مادام‌العمر</span>
+                        <span>دسترسی از موبایل</span>
                     </div>
                 </div>
             </div>
@@ -359,16 +390,16 @@ async function loadCourseDetail() {
 
 async function attemptCourse(courseId) {
     if (!currentUser) {
-        alert('Please sign in to attempt this course.');
+        alert('برای شروع این دوره وارد شوید.');
         window.location.href = 'signup.html';
         return;
     }
     try {
         await apiRequest('/enrollments/', 'POST', { course: courseId });
-        alert('You have successfully started this course!');
+        alert('با موفقیت در این دوره ثبت‌نام شدید!');
         window.location.href = 'User_dashboard.html';
     } catch (err) {
-        alert((err.data && err.data.error) || 'Failed to enroll. Please try again.');
+        alert((err.data && err.data.error) || 'ثبت‌نام ناموفق بود. لطفاً دوباره تلاش کنید.');
     }
 }
 
@@ -395,7 +426,7 @@ async function updateDashboard() {
         const continueList = document.getElementById('continueLearningList');
         const active = enrolledList.filter(e => e.progress < 100);
         if (active.length === 0) {
-            continueList.innerHTML = '<p>No courses in progress. <a href="course_list.html">Browse courses</a>.</p>';
+            continueList.innerHTML = '<p>دوره‌ای در حال یادگیری نیست. <a href="course_list.html">دوره‌ها را مرور کنید</a>.</p>';
         } else {
             continueList.innerHTML = active.slice(0,3).map(enroll => {
                 const course = coursesData.find(c => c.id === enroll.course);
@@ -414,7 +445,7 @@ async function updateDashboard() {
 
         const enrolledListEl = document.getElementById('enrolledCoursesList');
         if (enrolledList.length === 0) {
-            enrolledListEl.innerHTML = '<p>No courses enrolled yet.</p>';
+            enrolledListEl.innerHTML = '<p>هنوز در هیچ دوره‌ای ثبت‌نام نکرده‌اید.</p>';
         } else {
             enrolledListEl.innerHTML = enrolledList.map(enroll => {
                 const course = coursesData.find(c => c.id === enroll.course);
@@ -435,7 +466,7 @@ async function updateDashboard() {
     }
 
     const activityList = document.getElementById('activityList');
-    activityList.innerHTML = '<li>System initialized</li>';
+    activityList.innerHTML = '<li>سیستم آماده است</li>';
 }
 
 function showDashSection(section, linkEl) {
@@ -453,7 +484,7 @@ async function handleContactSubmit(e) {
     const subject = document.getElementById('contactSubject').value;
     const message = document.getElementById('contactMessage').value.trim();
     if (!name || !email || !subject || !message) {
-        alert('Please fill all required fields.');
+        alert('لطفاً تمام فیلدهای الزامی را پر کنید.');
         return;
     }
     try {
@@ -478,7 +509,7 @@ function resetContactForm() {
 function populateFeedbackCourses() {
     const select = document.getElementById('feedbackCourse');
     if (!select) return;
-    select.innerHTML = '<option value="">Choose a course...</option>' +
+    select.innerHTML = '<option value="">یک دوره انتخاب کنید...</option>' +
         coursesData.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
 }
 
@@ -486,8 +517,8 @@ function setRating(rating) {
     selectedRating = rating;
     document.getElementById('feedbackRating').value = rating;
     updateStars();
-    const texts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent!'];
-    document.getElementById('ratingText').textContent = rating > 0 ? `${rating} - ${texts[rating]}` : 'Click to rate';
+    const texts = ['', 'ضعیف', 'متوسط', 'خوب', 'خیلی خوب', 'عالی!'];
+    document.getElementById('ratingText').textContent = rating > 0 ? `${rating} - ${texts[rating]}` : 'برای امتیاز دادن کلیک کنید';
 }
 
 function hoverRating(rating) {
@@ -518,7 +549,7 @@ async function handleFeedbackSubmit(e) {
     const rating = parseInt(document.getElementById('feedbackRating').value);
     const message = document.getElementById('feedbackMessage').value.trim();
     if (!courseId || !rating || !message) {
-        alert('Please fill all required fields including the rating.');
+        alert('لطفاً تمام فیلدهای الزامی از جمله امتیاز را پر کنید.');
         return;
     }
     try {
@@ -544,7 +575,7 @@ function resetFeedbackForm() {
     document.getElementById('feedbackCharCount').textContent = '0';
     selectedRating = 0;
     updateStars();
-    document.getElementById('ratingText').textContent = 'Click to rate';
+    document.getElementById('ratingText').textContent = 'برای امتیاز دادن کلیک کنید';
 }
 
 // ==================== PROFILE PAGE ====================
@@ -802,7 +833,7 @@ async function initAdminPage() {
     if (!data) return;
 
     document.getElementById('statActiveUsers').textContent = data.stats.active_users;
-    document.getElementById('statRevenue').textContent = `$${data.stats.total_revenue.toLocaleString()}`;
+    document.getElementById('statRevenue').textContent = `${data.stats.total_revenue.toLocaleString()} تومان`;
     document.getElementById('statMessages').textContent = data.stats.new_messages;
     document.getElementById('statFeedback').textContent = data.stats.feedback_count;
 
@@ -813,16 +844,16 @@ async function initAdminPage() {
     const sidebarLogBadge = document.getElementById('sidebarLogBadge');
     if (sidebarLogBadge) sidebarLogBadge.textContent = issueCount;
 
-    document.getElementById('financeIncome').textContent = `$${data.finance.total_income.toLocaleString()}`;
-    document.getElementById('financeExpenses').textContent = `$${data.finance.total_expenses.toLocaleString()}`;
-    document.getElementById('financeNet').textContent = `$${data.finance.net.toLocaleString()}`;
+    document.getElementById('financeIncome').textContent = `${data.finance.total_income.toLocaleString()} تومان`;
+    document.getElementById('financeExpenses').textContent = `${data.finance.total_expenses.toLocaleString()} تومان`;
+    document.getElementById('financeNet').textContent = `${data.finance.net.toLocaleString()} تومان`;
     document.getElementById('transactionList').innerHTML = data.finance.transactions.map(tx => `
         <div class="transaction-item">
             <div class="tx-left">
                 <span class="tx-icon ${tx.type}">${tx.type === 'income' ? '↑' : '↓'}</span>
                 <div><div style="font-weight:600;">${escapeHtml(tx.label)}</div><div style="font-size:0.7rem;color:var(--text-light);">${escapeHtml(tx.time)}</div></div>
             </div>
-            <span class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}$${tx.amount}</span>
+            <span class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${tx.amount.toLocaleString()} تومان</span>
         </div>
     `).join('') || '<p style="color:var(--text-secondary);">تراکنشی ثبت نشده است.</p>';
 
@@ -861,7 +892,7 @@ async function initAdminPage() {
         data: {
             labels: txForChart.map(tx => tx.time),
             datasets: [{
-                label: 'تراکنش (دلار)',
+                label: 'تراکنش (تومان)',
                 data: txForChart.map(tx => tx.type === 'income' ? tx.amount : -tx.amount),
                 borderColor: '#4361ee',
                 backgroundColor: 'rgba(67, 97, 238, 0.1)',
@@ -957,8 +988,8 @@ async function loadLogPage(page) {
     }
 
     document.getElementById('logPaginationSummary').textContent = data.count
-        ? `Showing ${data.start_index}-${data.end_index} of ${data.count} entries`
-        : 'Showing 0 of 0 entries';
+        ? `نمایش ${data.start_index} تا ${data.end_index} از ${data.count} مورد`
+        : 'نمایش ۰ از ۰ مورد';
     document.getElementById('logPrevBtn').disabled = !data.has_previous;
     document.getElementById('logNextBtn').disabled = !data.has_next;
 }
@@ -997,8 +1028,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if (page === 'base.html' || page === '' || page === 'index.html') {
         await fetchCourses();
+        await populateHeroCategories();
     } else if (page === 'course_list.html') {
         await fetchCourses();
+        await populateCategoryFilter();
         const params = new URLSearchParams(window.location.search);
         const category = params.get('category');
         const search = params.get('search');
