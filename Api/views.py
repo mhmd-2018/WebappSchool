@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
@@ -7,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, BasePermission, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
+from Chat.models import ConsultationRequest, MentorRequest
 from Courses.models import Category, Contact, Course, CourseEnrollment, Review, Transaction
 from log_viewer.models import LogEntry
 from User.models import phone_validator
@@ -44,14 +46,18 @@ def register(request):
     phone = (request.data.get('phone') or '').strip()
     password = request.data.get('password') or ''
 
-    if not name or not phone or len(password) < 6:
-        return Response({'error': 'لطفاً تمام فیلدها را پر کنید. رمز عبور باید حداقل ۶ کاراکتر باشد.'}, status=400)
+    if not name or not phone or not password:
+        return Response({'error': 'لطفاً تمام فیلدها را پر کنید.'}, status=400)
     try:
         phone_validator(phone)
     except ValidationError:
         return Response({'error': 'لطفاً یک شماره تلفن معتبر وارد کنید (مثلاً 09123456789).'}, status=400)
     if User.objects.filter(phone_number=phone).exists():
         return Response({'error': 'حسابی با این شماره تلفن قبلاً ثبت شده است.'}, status=400)
+    try:
+        validate_password(password, user=User(phone_number=phone, full_name=name))
+    except ValidationError as exc:
+        return Response({'error': ' '.join(exc.messages)}, status=400)
 
     user = User.objects.create_user(phone_number=phone, password=password, full_name=name)
     token, _ = Token.objects.get_or_create(user=user)
@@ -226,12 +232,54 @@ def admin_overview(request):
     score_counts = dict(Review.objects.values_list('score').annotate(count=Count('id')))
     rating_distribution = {str(score): score_counts.get(score, 0) for score in range(1, 6)}
 
+    consultation_qs = ConsultationRequest.objects.all()
+    mentor_qs = MentorRequest.objects.all()
+    chat_unreviewed = (
+        consultation_qs.filter(is_reviewed=False).count() + mentor_qs.filter(is_reviewed=False).count()
+    )
+
+    interest_breakdown = {}
+    for qs in (consultation_qs, mentor_qs):
+        for row in qs.values('interest_field').annotate(count=Count('id')):
+            interest_breakdown[row['interest_field']] = interest_breakdown.get(row['interest_field'], 0) + row['count']
+
+    chat_requests = [
+        {
+            'id': c.id,
+            'type': 'consultation',
+            'type_label': 'مشاوره',
+            'phone_number': c.phone_number,
+            'interest_field': c.interest_field,
+            'detail': f'سن {c.age} | بودجه: {c.monthly_budget} | زمان آزاد: {c.free_time}',
+            'source_page': c.source_page,
+            'time': c.created_at.strftime('%Y-%m-%d %H:%M'),
+            'is_reviewed': c.is_reviewed,
+        }
+        for c in consultation_qs.order_by('-created_at')[:20]
+    ] + [
+        {
+            'id': m.id,
+            'type': 'mentor',
+            'type_label': 'منتور',
+            'phone_number': m.phone_number,
+            'interest_field': m.interest_field,
+            'detail': f'دوره‌ها: {m.courses}',
+            'source_page': m.source_page,
+            'time': m.created_at.strftime('%Y-%m-%d %H:%M'),
+            'is_reviewed': m.is_reviewed,
+        }
+        for m in mentor_qs.order_by('-created_at')[:20]
+    ]
+    chat_requests.sort(key=lambda item: item['time'], reverse=True)
+    chat_requests = chat_requests[:20]
+
     return Response({
         'stats': {
             'active_users': active_users,
             'total_revenue': total_income,
             'new_messages': new_messages,
             'feedback_count': feedback_count,
+            'new_chat_requests': chat_unreviewed,
         },
         'log_summary': log_summary,
         'finance': {
@@ -249,6 +297,15 @@ def admin_overview(request):
         'messages': messages,
         'feedback': feedback,
         'rating_distribution': rating_distribution,
+        'chatbot': {
+            'stats': {
+                'consultation_total': consultation_qs.count(),
+                'mentor_total': mentor_qs.count(),
+                'unreviewed': chat_unreviewed,
+            },
+            'interest_breakdown': interest_breakdown,
+            'requests': chat_requests,
+        },
     })
 
 
@@ -261,6 +318,26 @@ def admin_mark_message_read(request, pk):
     contact.is_read = True
     contact.save(update_fields=['is_read'])
     return Response({'id': contact.id, 'is_read': True})
+
+
+CHAT_REQUEST_MODELS = {
+    'consultation': ConsultationRequest,
+    'mentor': MentorRequest,
+}
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def admin_mark_chat_reviewed(request, request_type, pk):
+    model = CHAT_REQUEST_MODELS.get(request_type)
+    if model is None:
+        return Response({'error': 'نوع درخواست نامعتبر است.'}, status=400)
+    chat_request = model.objects.filter(pk=pk).first()
+    if not chat_request:
+        return Response({'error': 'درخواست پیدا نشد.'}, status=404)
+    chat_request.is_reviewed = True
+    chat_request.save(update_fields=['is_reviewed'])
+    return Response({'id': chat_request.id, 'is_reviewed': True})
 
 
 @api_view(['GET'])

@@ -21,6 +21,33 @@ function avatarInitial(name, fallback = '?') {
     return escapeHtml((name || fallback).charAt(0));
 }
 
+// Converts any ASCII digits (0-9) in a number or string to Persian digits
+// (۰-۹). Non-digit characters (commas, decimal points, currency words, RTL
+// text) pass through unchanged, so it's safe to wrap around anything that
+// might contain a rendered number.
+const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+function toPersianDigits(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[0-9]/g, d => PERSIAN_DIGITS[d]);
+}
+
+// Reverses toPersianDigits — needed before parseInt()/Number() on any text
+// that may have been rendered with Persian digits, since JS number parsing
+// only understands ASCII 0-9.
+function fromPersianDigits(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[۰-۹]/g, d => PERSIAN_DIGITS.indexOf(d));
+}
+
+// escapeHtml + toPersianDigits combined, for database free-text fields that
+// can contain digits inline (course descriptions, curriculum/module text
+// like "Lesson 1", review comments, contact/feedback messages, names).
+// Plain escapeHtml() alone never touched those digits since it only escapes
+// HTML-special characters.
+function dbText(value) {
+    return toPersianDigits(escapeHtml(value));
+}
+
 async function apiRequest(endpoint, method = 'GET', body = null) {
     const headers = { 'Content-Type': 'application/json' };
     const token = localStorage.getItem('noqToken');
@@ -63,7 +90,7 @@ function updateNavAuth() {
     navAuthElements.forEach(el => {
         if (currentUser) {
             el.innerHTML = `
-                <span style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);">${escapeHtml(currentUser.name.split(' ')[0])}</span>
+                <span style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);">${dbText(currentUser.name.split(' ')[0])}</span>
                 <button class="btn btn-outline btn-sm" onclick="handleLogout()">خروج</button>
             `;
         } else {
@@ -219,8 +246,8 @@ function showSuggestions(query) {
         <div class="suggestion" onclick="window.location.href='course.html?id=${c.id}'">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <div>
-                <div class="suggestion-name">${escapeHtml(c.name)}</div>
-                <div class="suggestion-cat">${escapeHtml(c.category)} | ${c.rating}</div>
+                <div class="suggestion-name">${dbText(c.name)}</div>
+                <div class="suggestion-cat">${dbText(c.category)} | ${toPersianDigits(c.rating)}</div>
             </div>
         </div>
     `).join('');
@@ -251,7 +278,7 @@ async function populateCategoryFilter() {
     }
     const current = select.value;
     select.innerHTML = '<option value="all">همه دسته‌بندی‌ها</option>' +
-        categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+        categories.map(name => `<option value="${escapeHtml(name)}">${dbText(name)}</option>`).join('');
     if (categories.includes(current)) select.value = current;
 }
 
@@ -266,7 +293,7 @@ async function populateHeroCategories() {
         return;
     }
     container.innerHTML = categories.map(name =>
-        `<a class="category-pill" href="course_list.html?category=${encodeURIComponent(name)}">${escapeHtml(name)}</a>`
+        `<a class="category-pill" href="course_list.html?category=${encodeURIComponent(name)}">${dbText(name)}</a>`
     ).join('');
 }
 
@@ -291,16 +318,16 @@ function filterCourses() {
             <div class="course-icon" style="background:${escapeHtml(c.color) || '#4361ee'};">${escapeHtml(c.icon) || 'Q'}</div>
             <div class="course-info">
                 <div class="course-top-row">
-                    <h3 class="course-name">${escapeHtml(c.name)}</h3>
-                    <span class="course-rating">${c.rating} (${c.rating_count ? c.rating_count.toLocaleString() : '0'})</span>
-                    <span class="course-category-badge">${escapeHtml(c.category)}</span>
+                    <h3 class="course-name">${dbText(c.name)}</h3>
+                    <span class="course-rating">${toPersianDigits(c.rating)} (${toPersianDigits(c.rating_count ? c.rating_count.toLocaleString() : '0')})</span>
+                    <span class="course-category-badge">${dbText(c.category)}</span>
                 </div>
-                <p class="course-summary">${escapeHtml(c.summary)}</p>
+                <p class="course-summary">${dbText(c.summary)}</p>
                 <div class="course-meta">
-                    <span>${escapeHtml(c.instructor) || 'تیم Studia'}</span>
-                    <span>${c.lessons || 0} جلسه</span>
-                    <span>${c.hours || 0} ساعت</span>
-                    <span>${escapeHtml(c.level) || 'همه سطوح'}</span>
+                    <span>${dbText(c.instructor) || 'تیم Studia'}</span>
+                    <span>${toPersianDigits(c.lessons || 0)} جلسه</span>
+                    <span>${toPersianDigits(c.hours || 0)} ساعت</span>
+                    <span>${dbText(c.level) || 'همه سطوح'}</span>
                 </div>
             </div>
         </div>
@@ -329,22 +356,22 @@ async function loadCourseDetail() {
     container.innerHTML = `
         <div class="course-detail-hero">
             <div class="detail-left">
-                <span class="category-badge">${escapeHtml(course.category)}</span>
-                <h1>${escapeHtml(course.name)}</h1>
+                <span class="category-badge">${dbText(course.category)}</span>
+                <h1>${dbText(course.name)}</h1>
                 <div class="rating-box">
-                    <span class="rating-num">${course.rating}</span>
+                    <span class="rating-num">${toPersianDigits(course.rating)}</span>
                     <span class="stars">${'&#9733;'.repeat(Math.floor(course.rating))}</span>
-                    <span class="rating-count">(${course.rating_count ? course.rating_count.toLocaleString() : '0'} امتیاز)</span>
+                    <span class="rating-count">(${toPersianDigits(course.rating_count ? course.rating_count.toLocaleString() : '0')} امتیاز)</span>
                 </div>
-                <div class="instructor">مدرس: <strong>${escapeHtml(course.instructor) || 'تیم Studia'}</strong></div>
-                <p class="description">${escapeHtml(course.summary)}</p>
+                <div class="instructor">مدرس: <strong>${dbText(course.instructor) || 'تیم Studia'}</strong></div>
+                <p class="description">${dbText(course.summary)}</p>
                 <div class="course-curriculum">
                     <h2>چیزی که یاد می‌گیرید</h2>
                     <div class="module-list">
                         ${modules.map((mod, idx) => `
                             <div class="module-item">
-                                <span class="module-number">${idx+1}</span>
-                                <span>${escapeHtml(typeof mod === 'string' ? mod : mod.title || mod.name)}</span>
+                                <span class="module-number">${toPersianDigits(idx+1)}</span>
+                                <span>${dbText(typeof mod === 'string' ? mod : mod.title || mod.name)}</span>
                             </div>
                         `).join('')}
                     </div>
@@ -352,8 +379,8 @@ async function loadCourseDetail() {
                 <div class="instructor-bio">
                     <div class="avatar">${avatarInitial(course.instructor, 'N')}</div>
                     <div class="bio-text">
-                        <h4>درباره ${escapeHtml(course.instructor) || 'تیم Studia'}</h4>
-                        <p>${escapeHtml(course.instructor_bio) || 'مدرس متخصص در Studia.'}</p>
+                        <h4>درباره ${dbText(course.instructor) || 'تیم Studia'}</h4>
+                        <p>${dbText(course.instructor_bio) || 'مدرس متخصص در Studia.'}</p>
                     </div>
                 </div>
                 <div class="reviews-section">
@@ -362,9 +389,9 @@ async function loadCourseDetail() {
                         <div class="review-item">
                             <div class="review-avatar">${avatarInitial(r.name, 'A')}</div>
                             <div class="review-content">
-                                <div class="review-name">${escapeHtml(r.name) || 'ناشناس'}</div>
+                                <div class="review-name">${dbText(r.name) || 'ناشناس'}</div>
                                 <div class="review-rating">${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5-r.rating)}</div>
-                                <p class="review-text">${escapeHtml(r.text || r.comment) || ''}</p>
+                                <p class="review-text">${dbText(r.text || r.comment) || ''}</p>
                             </div>
                         </div>
                     `).join('')}
@@ -372,11 +399,11 @@ async function loadCourseDetail() {
             </div>
             <div class="detail-right">
                 <div class="detail-card">
-                    <div class="price">${course.price ? course.price.toLocaleString() : 0} تومان ${course.original_price ? '<span class="original">' + course.original_price.toLocaleString() + ' تومان</span>' : ''}</div>
+                    <div class="price">${toPersianDigits(course.price ? course.price.toLocaleString() : 0)} تومان ${course.original_price ? '<span class="original">' + toPersianDigits(course.original_price.toLocaleString()) + ' تومان</span>' : ''}</div>
                     <button class="btn btn-primary btn-lg enroll-btn" onclick="attemptCourse(${course.id})">شروع دوره</button>
                     <div class="course-stats">
-                        <span>${course.lessons || 0} جلسه</span>
-                        <span>${course.hours || 0} ساعت محتوا</span>
+                        <span>${toPersianDigits(course.lessons || 0)} جلسه</span>
+                        <span>${toPersianDigits(course.hours || 0)} ساعت محتوا</span>
                         <span>${course.level || 'همه سطوح'}</span>
                         <span>فارسی</span>
                         <span>دسترسی مادام‌العمر</span>
@@ -417,11 +444,11 @@ async function updateDashboard() {
     try {
         const enrolled = await apiRequest('/enrollments/');
         const enrolledList = enrolled.results || enrolled;
-        document.getElementById('statEnrolled').textContent = enrolledList.length;
+        document.getElementById('statEnrolled').textContent = toPersianDigits(enrolledList.length);
         const completed = enrolledList.filter(e => e.progress >= 100).length;
-        document.getElementById('statCompleted').textContent = completed;
-        document.getElementById('statHours').textContent = enrolledList.length * 14;
-        document.getElementById('statCertificates').textContent = completed;
+        document.getElementById('statCompleted').textContent = toPersianDigits(completed);
+        document.getElementById('statHours').textContent = toPersianDigits(enrolledList.length * 14);
+        document.getElementById('statCertificates').textContent = toPersianDigits(completed);
 
         const continueList = document.getElementById('continueLearningList');
         const active = enrolledList.filter(e => e.progress < 100);
@@ -434,10 +461,10 @@ async function updateDashboard() {
                 return `
                     <div class="enrolled-course-item">
                         <div class="course-progress">
-                            <div class="progress-name">${escapeHtml(course.name)}</div>
+                            <div class="progress-name">${dbText(course.name)}</div>
                             <div class="progress-bar"><div class="progress-fill" style="width:${enroll.progress}%;"></div></div>
                         </div>
-                        <span class="progress-percent">${enroll.progress}%</span>
+                        <span class="progress-percent">${toPersianDigits(enroll.progress)}%</span>
                     </div>
                 `;
             }).join('');
@@ -453,10 +480,10 @@ async function updateDashboard() {
                 return `
                     <div class="enrolled-course-item">
                         <div class="course-progress">
-                            <div class="progress-name">${escapeHtml(course.name)}</div>
+                            <div class="progress-name">${dbText(course.name)}</div>
                             <div class="progress-bar"><div class="progress-fill" style="width:${enroll.progress}%;"></div></div>
                         </div>
-                        <span class="progress-percent">${enroll.progress}%</span>
+                        <span class="progress-percent">${toPersianDigits(enroll.progress)}%</span>
                     </div>
                 `;
             }).join('');
@@ -503,14 +530,14 @@ function resetContactForm() {
     document.getElementById('contactEmail').value = '';
     document.getElementById('contactSubject').value = '';
     document.getElementById('contactMessage').value = '';
-    document.getElementById('contactCharCount').textContent = '0';
+    document.getElementById('contactCharCount').textContent = '۰';
 }
 
 function populateFeedbackCourses() {
     const select = document.getElementById('feedbackCourse');
     if (!select) return;
     select.innerHTML = '<option value="">یک دوره انتخاب کنید...</option>' +
-        coursesData.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        coursesData.map(c => `<option value="${c.id}">${dbText(c.name)}</option>`).join('');
 }
 
 function setRating(rating) {
@@ -518,7 +545,7 @@ function setRating(rating) {
     document.getElementById('feedbackRating').value = rating;
     updateStars();
     const texts = ['', 'ضعیف', 'متوسط', 'خوب', 'خیلی خوب', 'عالی!'];
-    document.getElementById('ratingText').textContent = rating > 0 ? `${rating} - ${texts[rating]}` : 'برای امتیاز دادن کلیک کنید';
+    document.getElementById('ratingText').textContent = rating > 0 ? `${toPersianDigits(rating)} - ${texts[rating]}` : 'برای امتیاز دادن کلیک کنید';
 }
 
 function hoverRating(rating) {
@@ -572,7 +599,7 @@ function resetFeedbackForm() {
     document.getElementById('feedbackCourse').value = '';
     document.getElementById('feedbackMessage').value = '';
     document.getElementById('feedbackRating').value = '0';
-    document.getElementById('feedbackCharCount').textContent = '0';
+    document.getElementById('feedbackCharCount').textContent = '۰';
     selectedRating = 0;
     updateStars();
     document.getElementById('ratingText').textContent = 'برای امتیاز دادن کلیک کنید';
@@ -600,7 +627,7 @@ function initProfilePage() {
     let selectedAvatarFile = null;
 
     function updateAboutCounter() {
-        aboutCounter.textContent = `${aboutTextarea.value.length} / ${maxChars}`;
+        aboutCounter.textContent = `${toPersianDigits(aboutTextarea.value.length)} / ${toPersianDigits(maxChars)}`;
     }
 
     function applyProfileData(data) {
@@ -716,6 +743,7 @@ const ADMIN_SECTION_TITLES = {
     users: { title: '👥 گزارش کاربران', sub: 'آمار و تحلیل رفتار کاربران' },
     messages: { title: '✉️ پیام‌ها', sub: 'مشاهده و مدیریت پیام‌های دریافتی' },
     feedback: { title: '⭐ بازخوردها', sub: 'نظرات و امتیازات کاربران' },
+    chatbot: { title: '🤖 چت‌بات', sub: 'درخواست‌های مشاوره و منتور از چت‌بات' },
 };
 
 function toggleAdminSidebar() {
@@ -750,10 +778,10 @@ function renderAdminMessageItem(m) {
         <div class="message-item" data-message-id="${m.id}" ${onclick}>
             <div class="msg-avatar">${avatarInitial(m.name)}</div>
             <div class="msg-content">
-                <div class="msg-sender">${escapeHtml(m.name)}</div>
-                <div class="msg-preview">${escapeHtml(m.preview)}</div>
+                <div class="msg-sender">${dbText(m.name)}</div>
+                <div class="msg-preview">${dbText(m.preview)}</div>
             </div>
-            <span class="msg-time">${escapeHtml(m.time)}</span>
+            <span class="msg-time">${toPersianDigits(escapeHtml(m.time))}</span>
             <span class="msg-status ${m.is_read ? 'read' : 'unread'}"></span>
         </div>
     `;
@@ -775,12 +803,12 @@ async function markAdminMessageRead(id) {
     }
 
     const badge = document.getElementById('sidebarMessageBadge');
-    const remaining = Math.max((parseInt(badge?.textContent, 10) || 1) - 1, 0);
-    if (badge) badge.textContent = remaining;
+    const remaining = Math.max((parseInt(fromPersianDigits(badge?.textContent), 10) || 1) - 1, 0);
+    if (badge) badge.textContent = toPersianDigits(remaining);
     const statMessages = document.getElementById('statMessages');
-    if (statMessages) statMessages.textContent = remaining;
+    if (statMessages) statMessages.textContent = toPersianDigits(remaining);
     const messagesBadgeCount = document.getElementById('messagesBadgeCount');
-    if (messagesBadgeCount) messagesBadgeCount.textContent = `${remaining} نخوانده`;
+    if (messagesBadgeCount) messagesBadgeCount.textContent = `${toPersianDigits(remaining)} نخوانده`;
 }
 
 function renderAdminFeedbackItem(f) {
@@ -789,12 +817,53 @@ function renderAdminFeedbackItem(f) {
         <div class="feedback-item">
             <div class="fb-avatar">${avatarInitial(f.name)}</div>
             <div class="fb-content">
-                <div class="fb-name">${escapeHtml(f.name)}</div>
-                <div class="fb-text">${escapeHtml(f.text)}</div>
+                <div class="fb-name">${dbText(f.name)}</div>
+                <div class="fb-text">${dbText(f.text)}</div>
                 <div class="fb-rating">${stars}</div>
             </div>
         </div>
     `;
+}
+
+function renderAdminChatItem(item) {
+    const onclick = item.is_reviewed ? '' : `onclick="markAdminChatReviewed('${item.type}', ${item.id})"`;
+    const isMentor = item.type === 'mentor';
+    const typeLabel = isMentor ? '🧑‍🏫 منتور' : '🎓 مشاوره';
+    return `
+        <div class="message-item" data-chat-id="${item.id}" data-chat-type="${item.type}" ${onclick}>
+            <div class="msg-avatar">${isMentor ? '🧑‍🏫' : '🎓'}</div>
+            <div class="msg-content">
+                <div class="msg-sender">${typeLabel} — ${toPersianDigits(escapeHtml(item.phone_number))}</div>
+                <div class="msg-preview">${dbText(item.interest_field)} · ${dbText(item.detail)}</div>
+            </div>
+            <span class="msg-time">${toPersianDigits(escapeHtml(item.time))}</span>
+            <span class="msg-status ${item.is_reviewed ? 'read' : 'unread'}"></span>
+        </div>
+    `;
+}
+
+async function markAdminChatReviewed(type, id) {
+    try {
+        await apiRequest(`/admin/chat-requests/${type}/${id}/review/`, 'PATCH');
+    } catch (err) {
+        console.error('Failed to mark chat request as reviewed:', err);
+        return;
+    }
+
+    const item = document.querySelector(`.message-item[data-chat-id="${id}"][data-chat-type="${type}"]`);
+    if (item) {
+        item.removeAttribute('onclick');
+        const dot = item.querySelector('.msg-status');
+        if (dot) { dot.classList.remove('unread'); dot.classList.add('read'); }
+    }
+
+    const badge = document.getElementById('sidebarChatBadge');
+    const remaining = Math.max((parseInt(fromPersianDigits(badge?.textContent), 10) || 1) - 1, 0);
+    if (badge) badge.textContent = toPersianDigits(remaining);
+    const statUnreviewed = document.getElementById('statChatUnreviewed');
+    if (statUnreviewed) statUnreviewed.textContent = toPersianDigits(remaining);
+    const chatBadgeCount = document.getElementById('chatBadgeCount');
+    if (chatBadgeCount) chatBadgeCount.textContent = `${toPersianDigits(remaining)} بررسی‌نشده`;
 }
 
 async function initAdminPage() {
@@ -832,28 +901,28 @@ async function initAdminPage() {
     }
     if (!data) return;
 
-    document.getElementById('statActiveUsers').textContent = data.stats.active_users;
-    document.getElementById('statRevenue').textContent = `${data.stats.total_revenue.toLocaleString()} تومان`;
-    document.getElementById('statMessages').textContent = data.stats.new_messages;
-    document.getElementById('statFeedback').textContent = data.stats.feedback_count;
+    document.getElementById('statActiveUsers').textContent = toPersianDigits(data.stats.active_users);
+    document.getElementById('statRevenue').textContent = `${toPersianDigits(data.stats.total_revenue.toLocaleString())} تومان`;
+    document.getElementById('statMessages').textContent = toPersianDigits(data.stats.new_messages);
+    document.getElementById('statFeedback').textContent = toPersianDigits(data.stats.feedback_count);
 
-    document.getElementById('logCountInfo').textContent = data.log_summary.INFO || 0;
-    document.getElementById('logCountWarning').textContent = data.log_summary.WARNING || 0;
-    document.getElementById('logCountError').textContent = data.log_summary.ERROR || 0;
+    document.getElementById('logCountInfo').textContent = toPersianDigits(data.log_summary.INFO || 0);
+    document.getElementById('logCountWarning').textContent = toPersianDigits(data.log_summary.WARNING || 0);
+    document.getElementById('logCountError').textContent = toPersianDigits(data.log_summary.ERROR || 0);
     const issueCount = (data.log_summary.WARNING || 0) + (data.log_summary.ERROR || 0);
     const sidebarLogBadge = document.getElementById('sidebarLogBadge');
-    if (sidebarLogBadge) sidebarLogBadge.textContent = issueCount;
+    if (sidebarLogBadge) sidebarLogBadge.textContent = toPersianDigits(issueCount);
 
-    document.getElementById('financeIncome').textContent = `${data.finance.total_income.toLocaleString()} تومان`;
-    document.getElementById('financeExpenses').textContent = `${data.finance.total_expenses.toLocaleString()} تومان`;
-    document.getElementById('financeNet').textContent = `${data.finance.net.toLocaleString()} تومان`;
+    document.getElementById('financeIncome').textContent = `${toPersianDigits(data.finance.total_income.toLocaleString())} تومان`;
+    document.getElementById('financeExpenses').textContent = `${toPersianDigits(data.finance.total_expenses.toLocaleString())} تومان`;
+    document.getElementById('financeNet').textContent = `${toPersianDigits(data.finance.net.toLocaleString())} تومان`;
     document.getElementById('transactionList').innerHTML = data.finance.transactions.map(tx => `
         <div class="transaction-item">
             <div class="tx-left">
                 <span class="tx-icon ${tx.type}">${tx.type === 'income' ? '↑' : '↓'}</span>
-                <div><div style="font-weight:600;">${escapeHtml(tx.label)}</div><div style="font-size:0.7rem;color:var(--text-light);">${escapeHtml(tx.time)}</div></div>
+                <div><div style="font-weight:600;">${dbText(tx.label)}</div><div style="font-size:0.7rem;color:var(--text-light);">${toPersianDigits(escapeHtml(tx.time))}</div></div>
             </div>
-            <span class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${tx.amount.toLocaleString()} تومان</span>
+            <span class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${toPersianDigits(tx.amount.toLocaleString())} تومان</span>
         </div>
     `).join('') || '<p style="color:var(--text-secondary);">تراکنشی ثبت نشده است.</p>';
 
@@ -865,32 +934,54 @@ async function initAdminPage() {
     };
     document.getElementById('userReportBars').innerHTML = Object.entries(reportLabels).map(([key, label]) => `
         <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${label}</span><span>${data.users_report[key]}%</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${label}</span><span>${toPersianDigits(data.users_report[key])}%</span></div>
             <div style="height:8px; background:var(--surface-hover); border-radius:4px; overflow:hidden;">
                 <div style="height:100%; width:${data.users_report[key]}%; background:linear-gradient(90deg,var(--primary),var(--secondary)); border-radius:4px;"></div>
             </div>
         </div>
     `).join('');
 
-    document.getElementById('sidebarMessageBadge').textContent = data.stats.new_messages;
-    document.getElementById('messagesBadgeCount').textContent = `${data.stats.new_messages} نخوانده`;
+    document.getElementById('sidebarMessageBadge').textContent = toPersianDigits(data.stats.new_messages);
+    document.getElementById('messagesBadgeCount').textContent = `${toPersianDigits(data.stats.new_messages)} نخوانده`;
     document.getElementById('overviewMessageList').innerHTML =
         data.messages.slice(0, 3).map(renderAdminMessageItem).join('') || '<p style="color:var(--text-secondary);">پیامی وجود ندارد.</p>';
     document.getElementById('messageList').innerHTML =
         data.messages.map(renderAdminMessageItem).join('') || '<p style="color:var(--text-secondary);">پیامی وجود ندارد.</p>';
 
-    document.getElementById('sidebarFeedbackBadge').textContent = data.stats.feedback_count;
-    document.getElementById('feedbackBadgeCount').textContent = data.stats.feedback_count;
+    document.getElementById('sidebarFeedbackBadge').textContent = toPersianDigits(data.stats.feedback_count);
+    document.getElementById('feedbackBadgeCount').textContent = toPersianDigits(data.stats.feedback_count);
     document.getElementById('overviewFeedbackList').innerHTML =
         data.feedback.slice(0, 2).map(renderAdminFeedbackItem).join('') || '<p style="color:var(--text-secondary);">بازخوردی وجود ندارد.</p>';
     document.getElementById('feedbackListFull').innerHTML =
         data.feedback.map(renderAdminFeedbackItem).join('') || '<p style="color:var(--text-secondary);">بازخوردی وجود ندارد.</p>';
 
+    document.getElementById('sidebarChatBadge').textContent = toPersianDigits(data.stats.new_chat_requests);
+    document.getElementById('statChatConsultation').textContent = toPersianDigits(data.chatbot.stats.consultation_total);
+    document.getElementById('statChatMentor').textContent = toPersianDigits(data.chatbot.stats.mentor_total);
+    document.getElementById('statChatUnreviewed').textContent = toPersianDigits(data.chatbot.stats.unreviewed);
+    document.getElementById('chatBadgeCount').textContent = `${toPersianDigits(data.chatbot.stats.unreviewed)} بررسی‌نشده`;
+
+    const interestEntries = Object.entries(data.chatbot.interest_breakdown).sort((a, b) => b[1] - a[1]);
+    const maxInterest = Math.max(1, ...interestEntries.map(([, count]) => count));
+    document.getElementById('chatInterestBars').innerHTML = interestEntries.map(([label, count]) => `
+        <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${dbText(label)}</span><span>${toPersianDigits(count)}</span></div>
+            <div style="height:8px; background:var(--surface-hover); border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:${Math.round(count / maxInterest * 100)}%; background:linear-gradient(90deg,var(--primary),var(--secondary)); border-radius:4px;"></div>
+            </div>
+        </div>
+    `).join('') || '<p style="color:var(--text-secondary);">هنوز درخواستی ثبت نشده است.</p>';
+
+    document.getElementById('overviewChatList').innerHTML =
+        data.chatbot.requests.slice(0, 3).map(renderAdminChatItem).join('') || '<p style="color:var(--text-secondary);">درخواستی وجود ندارد.</p>';
+    document.getElementById('chatListFull').innerHTML =
+        data.chatbot.requests.map(renderAdminChatItem).join('') || '<p style="color:var(--text-secondary);">درخواستی وجود ندارد.</p>';
+
     const txForChart = [...data.finance.transactions].reverse();
     new Chart(document.getElementById('financeChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: txForChart.map(tx => tx.time),
+            labels: txForChart.map(tx => toPersianDigits(tx.time)),
             datasets: [{
                 label: 'تراکنش (تومان)',
                 data: txForChart.map(tx => tx.type === 'income' ? tx.amount : -tx.amount),
@@ -906,9 +997,12 @@ async function initAdminPage() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${toPersianDigits(ctx.parsed.y)}` } },
+            },
             scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => toPersianDigits(v) } },
                 x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
             },
         },
@@ -933,9 +1027,12 @@ async function initAdminPage() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${toPersianDigits(ctx.parsed.y)}` } },
+            },
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => toPersianDigits(v) } },
                 x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
             },
         },
@@ -979,7 +1076,7 @@ async function loadLogPage(page) {
         emptyState.style.display = 'none';
         tbody.innerHTML = data.results.map(log => `
             <tr>
-                <td>${escapeHtml(log.time)}</td>
+                <td>${toPersianDigits(escapeHtml(log.time))}</td>
                 <td><span class="badge ${escapeHtml(log.level)}">${escapeHtml(log.level)}</span></td>
                 <td>${escapeHtml(log.logger_name)}</td>
                 <td>${escapeHtml(log.message)}</td>
@@ -988,7 +1085,7 @@ async function loadLogPage(page) {
     }
 
     document.getElementById('logPaginationSummary').textContent = data.count
-        ? `نمایش ${data.start_index} تا ${data.end_index} از ${data.count} مورد`
+        ? `نمایش ${toPersianDigits(data.start_index)} تا ${toPersianDigits(data.end_index)} از ${toPersianDigits(data.count)} مورد`
         : 'نمایش ۰ از ۰ مورد';
     document.getElementById('logPrevBtn').disabled = !data.has_previous;
     document.getElementById('logNextBtn').disabled = !data.has_next;
@@ -1054,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const msgInput = document.getElementById('contactMessage');
         if (msgInput) {
             msgInput.addEventListener('input', function() {
-                document.getElementById('contactCharCount').textContent = this.value.length;
+                document.getElementById('contactCharCount').textContent = toPersianDigits(this.value.length);
             });
         }
     } else if (page === 'profile_alter.html') {
@@ -1068,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const fbMsg = document.getElementById('feedbackMessage');
     if (fbMsg) {
         fbMsg.addEventListener('input', function() {
-            document.getElementById('feedbackCharCount').textContent = this.value.length;
+            document.getElementById('feedbackCharCount').textContent = toPersianDigits(this.value.length);
         });
     }
 

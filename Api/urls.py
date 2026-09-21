@@ -15,5 +15,6 @@ urlpatterns = [
     path('feedbacks/', views.feedback_create),
     path('admin/overview/', views.admin_overview),
     path('admin/messages/<int:pk>/read/', views.admin_mark_message_read),
+    path('admin/chat-requests/<str:request_type>/<int:pk>/review/', views.admin_mark_chat_reviewed),
     path('admin/logs/', views.admin_logs),
 ]

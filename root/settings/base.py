@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'Courses',
     'Profile',
     'Api',
-    'log_viewer'
+    'log_viewer',
+    'Chat',
 ]
 
 # django-import-export: wrap each import in a transaction so a bad row rolls
@@ -60,8 +61,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    # Fail closed: every view below sets its own permission_classes explicitly,
+    # so this only matters as the default for a future view that forgets to.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 

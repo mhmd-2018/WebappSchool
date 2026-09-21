@@ -26,6 +26,7 @@ FRONTEND_PAGES = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('Api.urls')),
+    path('chatbot/', include('Chat.urls')),
     path('', include('log_viewer.urls')),
     path('', TemplateView.as_view(template_name='base.html'), name='home'),
 ]
